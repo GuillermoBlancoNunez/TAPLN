@@ -1,0 +1,6 @@
+[project]
+name = "tapln"
+version = "0.1.0"
+description = "TA1C: detección y spoiling de clickbait en español con LLMs y RAG"
+requires-python = ">=3.13"
+dependencies = []

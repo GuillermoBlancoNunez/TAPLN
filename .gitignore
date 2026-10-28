@@ -1,0 +1,48 @@
+# Contexto local de Claude Code
+CLAUDE.md
+.claude/
+
+# Secretos
+.env
+.env.*
+!.env.example
+
+# Python (el entorno lo gestiona uv; pyproject.toml, uv.lock y .python-version sí se versionan)
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+.ipynb_checkpoints/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Datos derivados (se versiona solo el comprimido original)
+Data/**/*.csv
+Data/*/
+Data/extracted/
+Data/processed/
+Data/TA1C-unlabeled_dataset*
+Papers/
+Enunciado/
+
+# Modelos, índices vectoriales y salidas
+models/
+checkpoints/
+*.safetensors
+*.bin
+*.faiss
+chroma/
+outputs/
+runs/
+wandb/
+.cache/
+
+# IDE y sistema operativo
+.vscode/
+.idea/
+Thumbs.db
+Desktop.ini
+.DS_Store

@@ -1,0 +1,46 @@
+name: Bug
+description: Algo no funciona como debería.
+title: "[BUG] "
+labels: ["tipo:bug"]
+body:
+  - type: textarea
+    id: descripcion
+    attributes:
+      label: Qué pasa
+    validations:
+      required: true
+  - type: textarea
+    id: pasos
+    attributes:
+      label: Cómo reproducirlo
+      description: Comandos exactos, configuración y commit.
+      value: |
+        1. `git checkout <commit>`
+        2. `uv run tapln …`
+    validations:
+      required: true
+  - type: textarea
+    id: esperado
+    attributes:
+      label: Qué esperabas que pasara
+    validations:
+      required: true
+  - type: dropdown
+    id: entorno
+    attributes:
+      label: Entorno
+      options: ["Windows (local)", "Linux/macOS (local)", "Colab", "Kaggle"]
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs o traza
+      render: shell
+  - type: dropdown
+    id: impacto
+    attributes:
+      label: Impacto
+      options: ["Bloquea la ruta crítica", "Bloquea a una persona", "Molesto, pero hay alternativa"]
+    validations:
+      required: true

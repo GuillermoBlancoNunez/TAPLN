@@ -1,0 +1,66 @@
+name: Decisión (ADR)
+description: Reunión de los tres para decidir con la evidencia de uno o varios experimentos. Produce un ADR.
+title: "[NN] Decisión: "
+labels: ["tipo:decisión"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Participan **los tres miembros**. La PR del ADR la aprueban los dos que no la han redactado.
+        Plantilla del ADR: `doc/adr/ADR-000-plantilla.md`. Presenta quien hizo el experimento.
+  - type: input
+    id: adr
+    attributes:
+      label: ADR
+      placeholder: "doc/adr/ADR-010-slug.md"
+    validations:
+      required: true
+  - type: textarea
+    id: pregunta
+    attributes:
+      label: Qué se decide
+    validations:
+      required: true
+  - type: textarea
+    id: evidencias
+    attributes:
+      label: Evidencias
+      description: Tareas de experimento cuyo informe se revisa.
+      placeholder: "#29, #30"
+    validations:
+      required: true
+  - type: textarea
+    id: criterio
+    attributes:
+      label: Criterio pre-registrado
+      description: Copiado tal cual del pre-registro de los EXP.
+    validations:
+      required: true
+  - type: textarea
+    id: criterios
+    attributes:
+      label: Criterios de aceptación
+      value: |
+        - [ ] Reunión de los tres (≤45 min) sobre las evidencias.
+        - [ ] Decisión tomada con el criterio pre-registrado; votos y discrepancias anotados en el ADR.
+        - [ ] ADR con decisión, consecuencias, fecha y participantes, en estado *Aceptado*.
+        - [ ] Tareas que dependían de esta decisión revisadas y desbloqueadas.
+        - [ ] PR del ADR aprobada por los otros dos.
+        - [ ] Entrada en `Diario_de_trabajo.md` y fila en `doc/adr/README.md`.
+  - type: textarea
+    id: orden
+    attributes:
+      label: Orden del día (≤45 min)
+      value: |
+        1. Repaso del criterio pre-registrado (5 min).
+        2. Resultados presentados por quien hizo cada experimento (10 min).
+        3. Discusión de los compromisos entre rendimiento y recursos (15 min).
+        4. Decisión y votación; consecuencias y tareas afectadas (10 min).
+        5. Quién redacta y quién revisa el ADR (5 min).
+  - type: checkboxes
+    id: participantes
+    attributes:
+      label: Participantes
+      options:
+        - label: Asisten @GuillermoBlancoNunez, @MiguelBanosB y @fizge.
+          required: true

@@ -1,0 +1,77 @@
+name: Tarea
+description: Trabajo con criterios de aceptación (feature, infra, evaluación, memoria, entrega).
+title: "[NN] "
+labels: ["tipo:feature"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Para pasar a **Ready** la tarea debe cumplir la *Definition of Ready* (CONTRIBUTING.md §5).
+        En el título va el número de la tarea (`[76] …`, el siguiente libre; coincide con el número del issue). Ajusta los labels de tipo, área y prioridad.
+  - type: textarea
+    id: objetivo
+    attributes:
+      label: Objetivo
+      description: Qué valor aporta y para quién, en 1–3 frases.
+    validations:
+      required: true
+  - type: textarea
+    id: criterios
+    attributes:
+      label: Criterios de aceptación
+      description: Checklist verificable; cada criterio se puede responder con un sí o un no.
+      value: |
+        - [ ]
+        - [ ]
+        - [ ]
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Área
+      options: ["T1", "T2", "común", "memoria", "gestión"]
+    validations:
+      required: true
+  - type: dropdown
+    id: prioridad
+    attributes:
+      label: Prioridad
+      options: ["P0 · Must", "P1 · Should", "P2 · Could"]
+    validations:
+      required: true
+  - type: dropdown
+    id: puntos
+    attributes:
+      label: Puntos (1 ≈ 2 h)
+      options: ["1", "2", "3", "5", "8 (mejor dividir)"]
+    validations:
+      required: true
+  - type: input
+    id: revisor
+    attributes:
+      label: Revisor
+      description: Alguien distinto de quien la hace; rota entre tareas (ver CONTRIBUTING §1).
+      placeholder: "@usuario"
+    validations:
+      required: true
+  - type: input
+    id: dependencias
+    attributes:
+      label: Antes de empezar deben estar terminadas
+      description: Tareas que deben estar en Done. Añádelas también como «blocked by» en el issue.
+      placeholder: "#12, #15"
+  - type: textarea
+    id: dod
+    attributes:
+      label: Definition of Done
+      value: |
+        - [ ] PR contra `develop` con `Closes #N`, aprobada por el revisor.
+        - [ ] CI en verde; tests añadidos o actualizados.
+        - [ ] Reproducible: configuración en `configs/`, semilla fija y comando en la PR.
+        - [ ] Entrada en `Diario_de_trabajo.md`.
+  - type: textarea
+    id: notas
+    attributes:
+      label: Notas
+      description: Enlaces, contexto, ideas descartadas…

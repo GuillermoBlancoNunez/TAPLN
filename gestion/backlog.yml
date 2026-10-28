@@ -1,0 +1,1796 @@
+# =============================================================================
+# Backlog del proyecto TAPLN · TA1C (detección y spoiling de clickbait, LLM + RAG)
+#
+# Plan inicial (línea base). Tras el bootstrap, el estado vivo está en el GitHub
+# Project; este fichero se conserva para comparar plan y realidad en la memoria.
+#
+#   Validar:   uv run --with pyyaml python gestion/bootstrap_github.py validate
+#   Informe:   uv run --with pyyaml python gestion/bootstrap_github.py report -o gestion/ROADMAP.md
+#   Simular:   uv run --with pyyaml python gestion/bootstrap_github.py plan
+#   Volcar:    uv run --with pyyaml python gestion/bootstrap_github.py apply
+#
+# Convenciones
+#   - Tareas numeradas en orden de ejecución: una tarea solo depende de números
+#     menores (depends_on = tareas que deben estar terminadas antes de empezar).
+#     En un repo vacío, la tarea N es el issue #N. En los textos, «#N» = tarea N.
+#   - Reparto rotatorio: los tres trabajan en todas las áreas. owners[0] es quien
+#     hace la tarea (y abre la PR); en tareas compartidas participan todos.
+#   - reviewers: quien aprueba la PR; rota para que nadie tenga siempre el mismo
+#     revisor. En decisiones, el ADR lo aprueban los otros dos.
+#   - points: 1 punto ≈ 2 h de una persona (recalibrar con la velocity del S1).
+#   - priority: P0 = Must (no se recorta), P1 = Should, P2 = Could (ampliación).
+#   - Cada experimento (tipo experimento) alimenta una decisión, que produce un ADR.
+# =============================================================================
+
+version: 2
+
+project:
+  repo: auto                 # se detecta del remoto «origin»; o escribe «usuario/repo»
+  owner: auto                # dueño del GitHub Project: por defecto, el dueño del repo
+  title: "TAPLN · TA1C"
+  description: "Tablero ágil del proyecto TAPLN: detección y spoiling de clickbait en español (TA1C, IberLEF 2025) con LLM + RAG."
+  base_branch: develop
+  release_branch: main
+  delivery_deadline: "2026-12-18 23:55 (Europe/Madrid)"
+  delivery_target: 2026-12-17
+
+capacity:
+  hours_per_point: 2
+  points_per_member_per_sprint: 12   # ≈ 12 h/semana por persona en sprints de 2 semanas
+  note: "Referencia inicial. Se recalibra en la Review del Sprint 1 con la velocity real."
+
+# Sin roles: los tres trabajan en todas las áreas. Solo el portavoz lo exige el enunciado.
+team:
+  A: {github: GuillermoBlancoNunez, name: Guillermo, role: "Portavoz: interlocutor con el profesor (lo exige el enunciado)"}
+  B: {github: MiguelBanosB, name: Miguel, role: ""}
+  C: {github: fizge, name: fizge, role: ""}
+
+sprints:
+  - id: S1
+    title: "Sprint 1 · Cimientos"
+    start: 2026-10-26
+    end: 2026-11-08
+    goal: "Entorno, datos y medición listos; EDA y estado del arte de ambas tareas; baselines clásicos de T1; decisión del backend de inferencia (ADR-001)."
+  - id: S2
+    title: "Sprint 2 · Componentes RAG"
+    start: 2026-11-09
+    end: 2026-11-22
+    goal: "Capas LLM y de recuperación; métricas oficiales; benchmarks de LLMs y embeddings (ADR-002, ADR-003); pipelines LLM + RAG v1 de T1 y T2; baselines de T2."
+  - id: S3
+    title: "Sprint 3 · Ajuste y decisiones"
+    start: 2026-11-23
+    end: 2026-12-06
+    goal: "Benchmarks del enfoque de T1, de la recuperación y la generación de T2 y del juez LLM (ADR-004 a ADR-007); sistemas finales de T1 y T2; borrador de la arquitectura."
+  - id: S4
+    title: "Sprint 4 · Evaluación final y entrega"
+    start: 2026-12-07
+    end: 2026-12-18
+    goal: "Congelación (ADR-009), evaluación única en test, ablaciones y eficiencia, memoria completa y entrega el 17-dic (plazo: 18-dic 23:55)."
+  - id: DEF
+    title: "Defensa"
+    start: 2026-12-19
+    end: null
+    goal: "Presentación y ensayos para la defensa del día del examen."
+
+labels:
+  types:
+    epica:       {name: "tipo:épica", color: "3E4B9E", description: "Agrupa issues de un mismo bloque funcional"}
+    feature:     {name: "tipo:feature", color: "1D76DB", description: "Funcionalidad del sistema"}
+    experimento: {name: "tipo:experimento", color: "FBCA04", description: "Benchmark pre-registrado: rendimiento + recursos"}
+    decision:    {name: "tipo:decisión", color: "D93F0B", description: "Reunión de los tres y ADR"}
+    infra:       {name: "tipo:infra", color: "5319E7", description: "Plataforma, CI, datos, MLOps"}
+    evaluacion:  {name: "tipo:evaluación", color: "0E8A16", description: "Métricas, juez LLM, estadística"}
+    docs:        {name: "tipo:docs", color: "0075CA", description: "Memoria y documentación"}
+    gestion:     {name: "tipo:gestión", color: "C5DEF5", description: "Proceso ágil y ceremonias"}
+    entrega:     {name: "tipo:entrega", color: "B60205", description: "Entrega y defensa"}
+    bug:         {name: "tipo:bug", color: "E11D21", description: "Algo no funciona como debería"}
+  areas:
+    gestion:     {name: "area:gestión", color: "BFD4F2", description: "Proceso y coordinación"}
+    comun:       {name: "area:común", color: "C2E0C6", description: "Componentes compartidos por T1 y T2"}
+    T1:          {name: "area:T1", color: "F9D0C4", description: "Tarea 1 · Detección"}
+    T2:          {name: "area:T2", color: "FEF2C0", description: "Tarea 2 · Spoiling"}
+    memoria:     {name: "area:memoria", color: "D4C5F9", description: "Memoria, entrega y defensa"}
+  priorities:
+    P0:          {name: "prio:P0", color: "B60205", description: "Must: imprescindible para la entrega"}
+    P1:          {name: "prio:P1", color: "D93F0B", description: "Should: importante, recortable con justificación"}
+    P2:          {name: "prio:P2", color: "FBCA04", description: "Could: ampliación si hay capacidad"}
+  extra:
+    - {name: "estado:bloqueado", color: "000000", description: "Bloqueado por una dependencia o un problema externo"}
+
+board:
+  current_sprint: S1
+  status_options:
+    - {name: "Backlog", color: GRAY, description: "Priorizado, sin comprometer en el sprint actual"}
+    - {name: "Ready", color: BLUE, description: "Cumple la Definition of Ready y está en el sprint actual"}
+    - {name: "In progress", color: YELLOW, description: "En curso (WIP máximo: 2 por persona)"}
+    - {name: "In review", color: PURPLE, description: "PR abierta esperando revisión"}
+    - {name: "Done", color: GREEN, description: "PR fusionada en develop y Definition of Done cumplida"}
+  initial_status: {current_sprint: "Ready", other: "Backlog"}
+  fields: {points: "Puntos", reviewer: "Revisor", start: "Inicio", end: "Fin"}
+  team_review_option: "Equipo (2 aprobaciones)"
+  views:
+    - {name: "Tablero", layout: board, columns: Status, filter: "-label:\"tipo:épica\""}
+    - {name: "Sprint actual", layout: board, columns: Status, filter: "milestone:\"{current_milestone}\" -label:\"tipo:épica\""}
+    - {name: "Por persona", layout: table, group_by: Assignees, filter: "-label:\"tipo:épica\" -status:Done"}
+    - {name: "Decisiones", layout: table, filter: "label:\"tipo:decisión\",\"tipo:experimento\""}
+    - {name: "Épicas", layout: table, filter: "label:\"tipo:épica\""}
+    - {name: "Roadmap", layout: roadmap, filter: "-label:\"tipo:épica\""}
+
+# -----------------------------------------------------------------------------
+# Épicas (bloques funcionales). Se crean después de las tareas, para que la
+# tarea N coincida con el issue #N en un repo vacío.
+# -----------------------------------------------------------------------------
+epics:
+  - id: E1
+    title: "Gestión ágil y proceso"
+    area: gestion
+    goal: >-
+      Trabajar con un proceso visible y verificable: tablero, revisión cruzada, ceremonias y
+      trazabilidad de todo lo que irá al Diario de Trabajo.
+  - id: E2
+    title: "Plataforma: datos, infraestructura y MLOps"
+    area: comun
+    goal: >-
+      Base técnica común y reproducible: estructura del repo, CI, capa de datos con guardarraíl
+      anti-fuga, medición de recursos y ejecución en Colab/Kaggle.
+  - id: E3
+    title: "Evaluación y medición"
+    area: comun
+    goal: >-
+      Métricas oficiales comparables con el ranking de TA1C, incertidumbre estadística y
+      evaluación LLM-as-a-judge validada con anotación humana.
+  - id: E4
+    title: "Núcleo LLM + RAG compartido"
+    area: comun
+    goal: >-
+      Elegir con evidencia (rendimiento y recursos) y construir los componentes compartidos:
+      backend de inferencia, LLM generador, embeddings e índice.
+  - id: E5
+    title: "T1 · Detección de clickbait"
+    area: T1
+    goal: >-
+      Clasificador LLM + RAG (few-shot dinámico) comparado con baselines clásicos y con encoders
+      fine-tuneados, evaluado con macro-F1 sobre el reparto oficial.
+  - id: E6
+    title: "T2 · Spoiling"
+    area: T2
+    goal: >-
+      Generador de spoilers de ≤280 caracteres con recuperación de pasajes del artículo,
+      comparado con baselines extractivos y con el artículo completo.
+  - id: E7
+    title: "Evaluación final y análisis"
+    area: comun
+    goal: >-
+      Congelar la arquitectura, evaluar una sola vez en test y analizar errores, ablaciones y
+      eficiencia (rendimiento frente a recursos).
+  - id: E8
+    title: "Memoria"
+    area: memoria
+    goal: >-
+      Memoria de ≤20 páginas con todos los apartados del enunciado, trazable a ficheros de
+      results/ y a los ADR.
+  - id: E9
+    title: "Entrega y defensa"
+    area: memoria
+    goal: >-
+      Entregar a tiempo un paquete instalable y verificado y preparar la defensa.
+
+# -----------------------------------------------------------------------------
+# Riesgos (se revisan en cada Sprint Review)
+# -----------------------------------------------------------------------------
+risks:
+  - id: R1
+    risk: "Cómputo limitado (CPU + Colab/Kaggle con cuotas y GPU variable): retrasos y benchmarks no comparables."
+    probability: Alta
+    impact: Alto
+    mitigation: "Modelos ≤12B cuantizados; caché de inferencias (#27); cada decisión se mide en un único entorno registrado; reservar la cuota semanal de GPU de Kaggle para los experimentos largos."
+    owner: C
+  - id: R2
+    risk: "Fuga de test o sobreajuste a dev (muchas configuraciones sobre 100 ejemplos en T2)."
+    probability: Media
+    impact: Alto
+    mitigation: "Guardarraíl de #11, una única ejecución en test (#61 y #62), IC95 y tests de significancia, criterios pre-registrados."
+    owner: C
+  - id: R3
+    risk: "Métricas no comparables con el ranking oficial (configuración distinta de BERTScore, BLEU o ROUGE)."
+    probability: Media
+    impact: Medio
+    mitigation: "#21 documenta y valida la configuración oficial antes de cualquier benchmark de T2."
+    owner: C
+  - id: R4
+    risk: "Incompatibilidades de Python 3.13 con parte del stack (vLLM, bitsandbytes, llama-cpp-python)."
+    probability: Media
+    impact: Medio
+    mitigation: "#13 lo verifica en Colab y Kaggle durante el Sprint 1; si falla, se fija 3.12 y se documenta en el Diario."
+    owner: C
+  - id: R5
+    risk: "Retraso en la ruta crítica (#15 → #17 → #27 → #29 y #30 → #33)."
+    probability: Media
+    impact: Alto
+    mitigation: "Trabajo en paralelo con un LLM provisional; revisión en ≤24 h para issues de la ruta crítica; seguimiento en cada standup."
+    owner: A
+  - id: R6
+    risk: "PRs bloqueadas esperando revisión."
+    probability: Media
+    impact: Medio
+    mitigation: "SLA de revisión 24–48 h, WIP ≤2 por persona, PRs pequeñas y CODEOWNERS para pedir revisión automáticamente."
+    owner: A
+  - id: R7
+    risk: "Licencias: datos de TA1C sin licencia explícita y modelos con licencias restrictivas."
+    probability: Baja
+    impact: Medio
+    mitigation: "No redistribuir datos en el zip; tabla de licencias en #47; elegir modelos con licencia compatible con uso académico."
+    owner: C
+  - id: R8
+    risk: "Coste de contexto por la rotación: quien hace una tarea no siempre hizo la anterior."
+    probability: Media
+    impact: Medio
+    mitigation: "El revisor de una tarea suele ser quien hará la siguiente que depende de ella; PRs con descripción y comando de prueba; demos en cada Sprint Review; ensayo de defensa (cada uno explica cualquier módulo)."
+    owner: A
+  - id: R9
+    risk: "Cuello de botella de la memoria en el último sprint."
+    probability: Alta
+    impact: Alto
+    mitigation: "Plantilla en S1 (#9), Diario continuo, borrador de arquitectura en S3, objetivo de entrega el 17-dic."
+    owner: C
+  - id: R10
+    risk: "Indisponibilidad temporal de un miembro (exámenes, enfermedad)."
+    probability: Media
+    impact: Medio
+    mitigation: "Capacidad declarada en cada Planning, recorte según el orden de prioridades, todo documentado en issues y PRs."
+    owner: A
+
+# Orden de recorte si la velocity real es menor que la planificada (los P0 no se recortan)
+scope_cut:
+  - "1. Todos los P2: #39, #41, #44, #48, #54 y #56."
+  - "2. #24: fijar el índice con la micro-comparativa de #14 y documentarlo en ADR-002."
+  - "3. #36: mantener los IC95 por bootstrap de #21 y prescindir de los tests pareados."
+  - "4. #45 + #51: usar un único juez sin benchmark, declarado como limitación en la memoria."
+  - "5. #20: agregar resultados con un script mínimo sin decisión de herramienta."
+
+# -----------------------------------------------------------------------------
+# Tareas, numeradas en orden de ejecución
+# -----------------------------------------------------------------------------
+items:
+
+  # ===================== Sprint 1 · Cimientos =====================
+
+  - id: "01"
+    title: "Completar la configuración del repo y del tablero"
+    epic: E1
+    type: gestion
+    area: gestion
+    owners: [A]
+    reviewers: [B]
+    sprint: S1
+    phase: start
+    points: 2
+    priority: P0
+    depends_on: []
+    goal: >-
+      Dejar el repo nuevo y el GitHub Project listos para trabajar: colaboradores, permisos,
+      vistas, automatizaciones y protección de ramas.
+    acceptance:
+      - "Repo creado desde cero con el contenido actual (datos comprimidos, README, Diario, `pyproject.toml`, `uv.lock` y kit de gestión) en `main`, y rama `develop` creada desde `main`."
+      - "@MiguelBanosB y @fizge son colaboradores con permiso *Write* (invitación aceptada) y tienen asignadas sus tareas (relanzar `apply` si faltaba alguno)."
+      - "Bootstrap ejecutado: labels, milestones, tareas numeradas (#N = tarea N), épicas, sub-issues y dependencias."
+      - "Project vinculado al repo, con @MiguelBanosB y @fizge como *Admin* (Settings → Manage access)."
+      - "Columnas Backlog · Ready · In progress · In review · Done y campos *Puntos*, *Revisor*, *Inicio* y *Fin* rellenados."
+      - "Vistas creadas (a mano si la API falla, según `gestion/README.md`) y workflows activos: auto-add, item cerrado → Done, PR fusionada → Done y PR enlazada → In review (si existe)."
+      - "Protección de `main` y `develop`: PR obligatoria, 1 aprobación y conversaciones resueltas (o constancia en el Diario si el plan de GitHub no lo permite)."
+      - "Captura del tablero en `doc/img/tablero_S1.png` para la memoria."
+    notes: "La hace quien crea el repo: solo el propietario puede cambiar ajustes, permisos y el Project."
+
+  - id: "02"
+    title: "Revisar entre los tres el proceso, el plan y el reparto"
+    epic: E1
+    type: gestion
+    area: gestion
+    owners: [A, B, C]
+    reviewers: [B, C]
+    sprint: S1
+    phase: start
+    points: 1
+    priority: P0
+    depends_on: []
+    goal: >-
+      Que los tres conozcan y acepten la forma de trabajar antes de empezar: tablero, Definition
+      of Ready/Done, ramas, revisión cruzada, protocolo de benchmarks y reparto de tareas.
+    acceptance:
+      - "Los tres han leído `CONTRIBUTING.md`, `doc/benchmarks/PROTOCOLO.md` y `gestion/ROADMAP.md`."
+      - "Reparto de tareas y de revisores aceptado o ajustado; los cambios se hacen directamente en el tablero."
+      - "Cambios al proceso, si los hay, en una PR aprobada por los otros dos."
+      - "La entrada del Diario «Metodología de trabajo» pasa de **Pendiente** a **Adoptado**."
+
+  - id: "03"
+    title: "Sprint 1 · Planning"
+    epic: E1
+    type: gestion
+    area: gestion
+    owners: [A, B, C]
+    reviewers: [C]
+    sprint: S1
+    phase: start
+    points: 1
+    priority: P0
+    depends_on: []
+    goal: >-
+      Comprometer el alcance del Sprint 1 con capacidad realista y dueños claros.
+    acceptance: &planning
+      - "Objetivo del sprint escrito en la descripción de la milestone."
+      - "Issues del sprint revisados con la Definition of Ready (objetivo, criterios, puntos, dueño, revisor y dependencias) y movidos a *Ready*."
+      - "Capacidad declarada por cada miembro (horas) y carga planificada ≤ capacidad; si no, recorte según `gestion/ROADMAP.md`."
+      - "Vista «Sprint actual» filtrada por la milestone del sprint."
+      - "Registro de riesgos revisado."
+      - "Acta breve en el Diario: fecha, objetivo, compromisos y capacidad."
+
+  - id: "04"
+    title: "Estructura del repositorio y paquete `tapln`"
+    epic: E2
+    type: infra
+    area: comun
+    owners: [A]
+    reviewers: [B]
+    sprint: S1
+    points: 2
+    priority: P0
+    depends_on: []
+    goal: >-
+      Esqueleto común para que el código de T1, T2 y la plataforma no diverja.
+    acceptance:
+      - "Layout creado: `src/tapln/{data,retrieval,llm,bench,eval,t1,t2}/`, `configs/`, `prompts/`, `scripts/`, `tests/`, `notebooks/`, `results/` (según CONTRIBUTING §Estructura)."
+      - "`pyproject.toml` con `build-system` y entrypoint `tapln`; `uv run tapln --help` funciona."
+      - "Dependencias base añadidas con `uv add` y `uv.lock` actualizado."
+      - "Carga de configuración YAML validada (pydantic o dataclasses) con un ejemplo comentado en `configs/`."
+      - "`.env.example` con las variables necesarias (p. ej. `HF_TOKEN`), sin valores reales."
+      - "README: «Instalación rápida» (`uv sync`, extracción de datos) y exportación de `requirements.txt` (`uv export --format requirements-txt`)."
+
+  - id: "05"
+    title: "EDA de detección (train y dev)"
+    epic: E5
+    type: feature
+    area: T1
+    owners: [B]
+    reviewers: [C]
+    sprint: S1
+    points: 2
+    priority: P0
+    depends_on: []
+    goal: >-
+      Conocer los datos de T1 para decidir preprocesado, prompts y selección de ejemplos con
+      evidencia.
+    acceptance:
+      - "`notebooks/eda_t1.ipynb` y figuras en `doc/img/`: distribución de clases por split, medio y país; longitudes; n-gramas más asociados a cada clase (χ² o PMI); URLs, emojis, interrogaciones y números."
+      - "Acuerdo entre anotadores (κ de Fleiss) con `deteccion_extra` y % de tweets con desacuerdo → techo humano estimado."
+      - "≥3 conclusiones accionables (preprocesado, prompts, selección de ejemplos) en el Diario."
+      - "Solo train y dev: `test_gold` no se inspecciona."
+    notes: "Puede empezar con pandas antes de que se fusione #11."
+
+  - id: "06"
+    title: "Estado del arte de T1"
+    epic: E5
+    type: docs
+    area: T1
+    owners: [B]
+    reviewers: [A]
+    sprint: S1
+    points: 2
+    priority: P0
+    depends_on: []
+    goal: >-
+      Partir de lo que funcionó en TA1C 2025 y justificar qué probamos y por qué.
+    acceptance:
+      - "Lectura del overview de TA1C 2025, de los papers de participantes (CEUR Vol-4098) y de Mordecki et al. (2024)."
+      - "Tabla en `doc/estado_del_arte.md`: equipo, enfoque, modelo, recursos y macro-F1 en test."
+      - "≥3 técnicas candidatas a probar, cada una con su fuente."
+      - "Referencias en `doc/memoria/referencias.bib`."
+
+  - id: "07"
+    title: "EDA de spoiling (train y dev)"
+    epic: E6
+    type: feature
+    area: T2
+    owners: [C]
+    reviewers: [A]
+    sprint: S1
+    points: 2
+    priority: P0
+    depends_on: []
+    goal: >-
+      Conocer los artículos y los spoilers para decidir longitud, chunking y prompt con
+      evidencia.
+    acceptance:
+      - "`notebooks/eda_t2.ipynb` y figuras: longitudes de artículo (palabras y tokens del tokenizer del LLM), teaser y spoiler; % de spoilers > 280 caracteres; estructura del JSON."
+      - "Extractividad: cobertura de tokens del spoiler en el artículo, % de subcadenas literales y posición del párrafo más parecido (sesgo hacia el inicio)."
+      - "Tipología de spoilers (frase, lista, cifra, nombre propio…) en una muestra de 50 de train."
+      - "≥3 conclusiones accionables (política de longitud, chunking, prompt) en el Diario."
+      - "Solo train y dev."
+
+  - id: "08"
+    title: "Estado del arte de T2"
+    epic: E6
+    type: docs
+    area: T2
+    owners: [B]
+    reviewers: [A]
+    sprint: S1
+    points: 2
+    priority: P0
+    depends_on: []
+    goal: >-
+      Partir de lo que funcionó en spoiling (TA1C 2025, SemEval-2023) y justificar qué probamos.
+    acceptance:
+      - "Lectura de los papers de T2 de TA1C 2025, de SemEval-2023 Task 5 (Clickbait Spoiling) y de NoticIA (García-Ferrero y Altuna, 2024)."
+      - "Tabla en `doc/estado_del_arte.md`: equipo, enfoque, modelo, uso de recuperación y métricas en test."
+      - "≥3 técnicas candidatas a probar, cada una con su fuente."
+      - "Referencias en `doc/memoria/referencias.bib`."
+
+  - id: "09"
+    title: "Plantilla, estructura y portada de la memoria"
+    epic: E8
+    type: docs
+    area: memoria
+    owners: [C]
+    reviewers: [B]
+    sprint: S1
+    points: 2
+    priority: P0
+    depends_on: []
+    goal: >-
+      Que cada capítulo tenga sitio, dueño y presupuesto de páginas desde el primer sprint.
+    acceptance:
+      - "Herramienta acordada por los tres (LaTeX en el repo, Overleaf o Word) y registrada en el Diario."
+      - "Estructura con todos los apartados obligatorios del enunciado y presupuesto de páginas por capítulo (≤20 sin portada, índices, bibliografía ni apéndices)."
+      - "Portada: nombre, login y email de los tres, identificando al portavoz."
+      - "`doc/memoria/referencias.bib` y estilo de citas definidos."
+      - "La plantilla exporta a PDF sin errores."
+
+  - id: "10"
+    title: "Calidad de código y CI: ruff, pytest, pre-commit y GitHub Actions"
+    epic: E2
+    type: infra
+    area: comun
+    owners: [C]
+    reviewers: [A]
+    sprint: S1
+    points: 2
+    priority: P0
+    depends_on: ["04"]
+    goal: >-
+      Que ninguna PR rompa el código común y que la revisión se centre en la lógica, no en el
+      formato.
+    acceptance:
+      - "`ruff` (lint + format) y `pytest` configurados en `pyproject.toml` (grupo `dev` de uv)."
+      - "`pre-commit` con ruff, `end-of-file-fixer`, `trailing-whitespace`, `check-added-large-files` (≤1 MB) y `detect-private-key`."
+      - "`.github/workflows/ci.yml`: en PR y push a `develop`/`main` ejecuta `uv sync --frozen`, `ruff check`, `ruff format --check` y `pytest -m \"not slow\"` en < 5 min."
+      - "Tests que necesitan modelos o red marcados como `slow` y excluidos de la CI."
+      - "CI en verde en la propia PR y badge en el README."
+      - "Check de CI exigido en la protección de `develop` y `main` (si el plan de GitHub lo permite)."
+
+  - id: "11"
+    title: "Capa de datos: carga, validación y guardarraíl anti-fuga de test"
+    epic: E2
+    type: infra
+    area: comun
+    owners: [A]
+    reviewers: [C]
+    sprint: S1
+    points: 3
+    priority: P0
+    depends_on: ["04"]
+    goal: >-
+      Una única forma de leer los datos, validada y que impida tocar test por accidente.
+    acceptance:
+      - "`tapln.data` carga los 9 CSV (detección, spoiler y detección_extra) con tipos y nombres de columna normalizados."
+      - "`Article Text JSON` se convierte en `title`, `subtitle` y `paragraphs` (lista) con normalización de espacios y caracteres de control."
+      - "Validaciones al cargar: nº de filas (2800/700/700, 300/100/100, 3500), IDs únicos, sin solapamiento entre splits y etiquetas válidas; SHA-256 de los `.tar.gz` comprobado."
+      - "Cualquier `test_gold` solo se carga con `allow_test=True` (CLI `--final-test`) y queda registrado en el log; hay un test unitario que lo verifica."
+      - "Cruce `deteccion` ↔ `deteccion_extra` por `Tweet ID` (artículo y etiquetas por anotador) disponible para train y dev."
+      - "Comando `tapln data extract` multiplataforma equivalente a los `tar -xzf` del README."
+      - "Tests con fixtures sintéticas: la CI no depende de los CSV reales."
+
+  - id: "12"
+    title: "Harness de medición de recursos y esquema de resultados"
+    epic: E2
+    type: infra
+    area: comun
+    owners: [C]
+    reviewers: [A]
+    sprint: S1
+    points: 3
+    priority: P0
+    depends_on: ["04"]
+    goal: >-
+      Medir igual en todas las decisiones: rendimiento y recursos (tiempo, latencia, memoria,
+      energía) con el mismo código y el mismo formato.
+    acceptance:
+      - "`tapln.bench.measure()` registra tiempo total, latencia por muestra (p50/p95/p99), throughput, RAM pico, VRAM pico, energía (kWh) y CO₂eq (CodeCarbon), declarando el método (NVML, RAPL o estimación por TDP)."
+      - "En LLMs registra además tokens de entrada y salida y tokens/s de prefill y de generación."
+      - "Separa el tiempo de carga (modelo, índice) del de inferencia; warm-up configurable; sincroniza la GPU antes de medir."
+      - "Captura del entorno: CPU, núcleos, RAM, GPU y VRAM, SO, plataforma (local/Colab/Kaggle), versiones clave y commit."
+      - "Esquema `results/schema.json` versionado (ver `doc/benchmarks/PROTOCOLO.md`) y validación al guardar: un JSON por ejecución en `results/<ID>/`."
+      - "Probado en ≥2 entornos (portátil Windows y Colab o Kaggle), con evidencia en la PR."
+      - "Tests unitarios con mocks de GPU y de CodeCarbon."
+
+  - id: "13"
+    title: "Runner reproducible para Colab y Kaggle"
+    epic: E2
+    type: infra
+    area: comun
+    owners: [B]
+    reviewers: [C]
+    sprint: S1
+    points: 2
+    priority: P0
+    depends_on: ["04"]
+    goal: >-
+      Ejecutar en GPU gratuita exactamente el mismo código y configuración que en local.
+    acceptance:
+      - "`notebooks/runner_colab.ipynb` (válido también en Kaggle) clona una rama, instala con uv, usa Drive o Kaggle Datasets como caché de modelos, ejecuta `tapln … --config …` y recupera `results/`."
+      - "Stack verificado con Python 3.13 en Colab y Kaggle (torch, transformers, sentence-transformers, faiss, codecarbon, bert-score y backend LLM); si algo falla se fija 3.12 y se registra en el Diario."
+      - "La GPU asignada (T4/P100/L4…) queda registrada en cada resultado."
+      - "Secretos vía Colab `userdata` o Kaggle Secrets, nunca escritos en el notebook."
+      - "Guía de ≤1 página en `doc/colab.md`, probada por el revisor (evidencia en la PR)."
+
+  - id: "14"
+    title: "Capa de recuperación: embeddings, índice vectorial, BM25 e híbrido"
+    epic: E4
+    type: infra
+    area: comun
+    owners: [B]
+    reviewers: [A]
+    sprint: S1
+    points: 3
+    priority: P0
+    depends_on: ["04", "12"]
+    goal: >-
+      Un único módulo de recuperación reutilizado por el few-shot dinámico de T1 y por la
+      recuperación de pasajes de T2.
+    acceptance:
+      - "`Embedder` configurable (modelo por defecto según ADR-002) con caché de embeddings en disco y normalización."
+      - "`VectorIndex` con build/save/load/search y filtro por metadato (p. ej. `article_id`); backends NumPy exacto y FAISS como mínimo."
+      - "`BM25Index` y fusión híbrida (RRF) con la misma interfaz `search(query, k)`."
+      - "Latencia de búsqueda y tamaño de índice medidos con el harness."
+      - "Tests unitarios."
+    notes: "Se adelanta al Sprint 1 para desbloquear #31 y #32 desde el primer día del Sprint 2; el modelo por defecto se fija al aceptarse ADR-002."
+
+  - id: "15"
+    title: "Benchmark de backends de inferencia LLM"
+    epic: E4
+    type: experimento
+    area: comun
+    owners: [A]
+    reviewers: [B]
+    sprint: S1
+    points: 3
+    priority: P0
+    depends_on: ["12", "13"]
+    decision: "17"
+    goal: >-
+      Elegir cómo se sirven los LLMs en portátil (CPU) y en Colab/Kaggle (GPU) con datos de
+      rendimiento y de coste.
+    prereg:
+      hipotesis: "Ollama/llama.cpp con GGUF cuantizado es lo más eficiente en CPU; en GPU, vLLM da el mayor throughput sin perder calidad."
+      candidatos: "Ollama, llama-cpp-python, HF Transformers (+bitsandbytes) y vLLM (solo GPU)."
+      rendimiento: "Paridad de salidas con temperature 0 en 20 prompts de T1 y T2; soporte de salida estructurada."
+      recursos: "tokens/s de prefill y de generación, latencia p50/p95 con un prompt de T2 (~1,5k tokens), RAM/VRAM pico, energía por 100 peticiones, tiempo de instalación y de arranque."
+      criterio: "Mayor tokens/s en cada entorno con paridad de salidas; se descarta lo que no funcione en Windows o en Colab/Kaggle."
+      entorno: "Portátil CPU (modelo anotado) y Colab T4, con el mismo modelo cuantizado (un 3B y un 7B en Q4)."
+    acceptance:
+      - "Mismo modelo y mismos prompts en todos los backends; compatibilidad con Windows, Colab y Kaggle comprobada."
+
+  - id: "16"
+    title: "Baselines clásicos de T1 (mayoritaria, TF-IDF + LR/SVM)"
+    epic: E5
+    type: feature
+    area: T1
+    owners: [C]
+    reviewers: [B]
+    sprint: S1
+    points: 2
+    priority: P0
+    depends_on: ["11", "12"]
+    goal: >-
+      Tener desde el primer sprint una referencia barata que cualquier sistema con LLM debe
+      superar.
+    acceptance:
+      - "Mayoritaria y TF-IDF (palabras + n-gramas de caracteres) + LR/SVM con `class_weight`; hiperparámetros por CV estratificada 5-fold sobre train."
+      - "Efecto del preprocesado (con y sin normalización de URLs, menciones y emojis) medido."
+      - "macro-F1 en dev y recursos (tiempo de entrenamiento e inferencia, energía) medidos con el harness; IC95 cuando estén las métricas comunes (#21)."
+      - "Resultados en `results/16/` y primeras filas de la tabla comparativa."
+      - "Test unitario del pipeline con datos sintéticos."
+
+  - id: "17"
+    title: "Decisión: backend de inferencia LLM"
+    epic: E4
+    type: decision
+    area: comun
+    owners: [A, B, C]
+    reviewers: [B, C]
+    sprint: S1
+    points: 1
+    priority: P0
+    depends_on: ["15"]
+    adr: "ADR-001-backend-inferencia"
+    goal: >-
+      Fijar el backend de inferencia para portátil y para GPU.
+    acceptance: []
+
+  - id: "18"
+    title: "Sprint 1 · Review y retrospectiva"
+    epic: E1
+    type: gestion
+    area: gestion
+    owners: [B, A, C]
+    reviewers: [C]
+    sprint: S1
+    phase: end
+    points: 2
+    priority: P0
+    depends_on: []
+    goal: >-
+      Inspeccionar lo entregado, recalibrar la estimación y mejorar el proceso.
+    acceptance: &review
+      - "Demo interna de lo terminado (solo cuenta lo fusionado en `develop`) y tabla de resultados actualizada."
+      - "Resumen para la sesión de seguimiento con el profesor preparado por el portavoz (avances, decisiones, bloqueos)."
+      - "Velocity registrada: puntos completados frente a comprometidos (Diario)."
+      - "Retrospectiva Start / Stop / Continue con ≥1 acción de mejora con dueño."
+      - "Issues no terminados re-estimados y movidos al siguiente sprint o al Backlog."
+      - "Release: PR `develop → main` aprobada por los otros dos y tag `v0.N` (N = número de sprint)."
+      - "Registro de riesgos actualizado y acta en el Diario."
+
+  # ===================== Sprint 2 · Componentes RAG =====================
+
+  - id: "19"
+    title: "Sprint 2 · Planning"
+    epic: E1
+    type: gestion
+    area: gestion
+    owners: [C, A, B]
+    reviewers: [A]
+    sprint: S2
+    phase: start
+    points: 1
+    priority: P0
+    depends_on: ["18"]
+    goal: >-
+      Comprometer el alcance del Sprint 2 con la capacidad recalibrada.
+    acceptance: *planning
+
+  - id: "20"
+    title: "Agregación de resultados y herramienta de tracking de experimentos"
+    epic: E2
+    type: infra
+    area: comun
+    owners: [A]
+    reviewers: [C]
+    sprint: S2
+    points: 2
+    priority: P1
+    depends_on: ["12"]
+    goal: >-
+      Comparar opciones de un vistazo y alimentar las tablas de la memoria sin copiar números a
+      mano.
+    acceptance:
+      - "Herramienta elegida y registrada en el Diario (JSON versionados + agregador propio, MLflow o W&B) con criterios: funciona igual en local/Colab/Kaggle, coste 0, reproducibilidad."
+      - "`tapln results summarize <ID>` genera una tabla Markdown/CSV (media ± desviación e IC95) y el gráfico calidad vs. coste (frente de Pareto)."
+      - "Cada ejecución guarda la configuración completa, la semilla, el commit, el hash del prompt y el hardware."
+      - "`results/LEADERBOARD.md` (dev) regenerable con un comando."
+
+  - id: "21"
+    title: "Métricas oficiales de TA1C e intervalos de confianza"
+    epic: E3
+    type: evaluacion
+    area: comun
+    owners: [C]
+    reviewers: [A]
+    sprint: S2
+    points: 3
+    priority: P0
+    depends_on: ["11"]
+    goal: >-
+      Que todos los números sean comparables con el ranking oficial y lleven su incertidumbre.
+    acceptance:
+      - "Configuración oficial documentada con cita (overview de TA1C o script de los organizadores): macro-F1; BERTScore (modelo, idioma, rescale); BLEU-4 (tokenización, smoothing); ROUGE-L (tokenizador, stemming)."
+      - "`tapln.eval.t1_scores` (macro-F1, P, R, F1 por clase, matriz de confusión) y `tapln.eval.t2_scores` (BERTScore-F1, BLEU-4, ROUGE-L), deterministas."
+      - "IC95 por bootstrap (≥1000 remuestreos, semilla fija) para todas las métricas."
+      - "Validación cruzada con una segunda implementación (p. ej. HF `evaluate` frente a `sacrebleu`/`rouge-score`/`bert-score`) con diferencias < 0,001, y con el script oficial si existe."
+      - "Tests con casos conocidos (predicción perfecta, vacía y mayoritaria)."
+      - "Coste medido: tiempo de BERTScore para 100 pares en CPU y en GPU."
+
+  - id: "22"
+    title: "Extracción de artículos y silver labels de relevancia"
+    epic: E6
+    type: feature
+    area: T2
+    owners: [C]
+    reviewers: [B]
+    sprint: S2
+    points: 3
+    priority: P0
+    depends_on: ["11"]
+    goal: >-
+      Texto limpio para indexar y una referencia de qué pasaje contiene la respuesta, para
+      evaluar la recuperación por separado.
+    acceptance:
+      - "Artículo limpio (título, subtítulo, párrafos) con eliminación de ruido (créditos de foto, «Lee también», etc.) documentada y testeada."
+      - "Para cada ejemplo de train y dev, fragmento(s) de referencia = mayor ROUGE-L o solapamiento con `Response` (umbral justificado) en `results/22/silver_labels.jsonl`."
+      - "Validación manual de 30 silver labels con la precisión estimada."
+      - "Tests unitarios del extractor."
+    notes: "Bloquea a #23 y a #30: hacerla en los primeros días del Sprint 2."
+
+  - id: "23"
+    title: "Benchmark de modelos de embeddings (vecinos para T1, pasajes para T2)"
+    epic: E4
+    type: experimento
+    area: comun
+    owners: [B]
+    reviewers: [A]
+    sprint: S2
+    points: 3
+    priority: P0
+    depends_on: ["11", "12", "22"]
+    decision: "28"
+    goal: >-
+      Elegir el modelo de embeddings que mejor recupera ejemplos similares (T1) y pasajes
+      relevantes (T2) al menor coste.
+    prereg:
+      hipotesis: "Los modelos e5/bge multilingües superan a los paraphrase-* en ambas tareas con un coste similar en CPU."
+      candidatos: "≥4 multilingües o de español (p. ej. multilingual-e5-small/base/large, bge-m3, paraphrase-multilingual-mpnet-base-v2 y uno específico de español)."
+      rendimiento: "T1: clasificador kNN sobre train (k ∈ {5, 10, 20}) → macro-F1 en dev (proxy de la calidad de los vecinos). T2: Recall@1/3/5 y MRR sobre las silver labels de #22 (chunking por párrafo)."
+      recursos: "Tiempo de codificación (train completo y 100 artículos), latencia por consulta, RAM/VRAM, dimensión, tamaño del índice, energía y licencia."
+      criterio: "Máxima media normalizada de (macro-F1 kNN, Recall@3) con latencia de consulta en CPU ≤ 50 ms."
+      entorno: "Portátil CPU de referencia (anotado) y, si hace falta, Colab para los modelos grandes."
+    acceptance:
+      - "Mismas silver labels y mismo chunking para todos los candidatos."
+
+  - id: "24"
+    title: "Benchmark de backends de índice vectorial"
+    epic: E4
+    type: experimento
+    area: comun
+    owners: [C]
+    reviewers: [B]
+    sprint: S2
+    points: 2
+    priority: P1
+    depends_on: ["14"]
+    decision: "28"
+    goal: >-
+      Elegir el índice más simple que cumpla los requisitos de latencia y memoria al tamaño real
+      del problema.
+    prereg:
+      hipotesis: "Al tamaño real (miles de vectores) la búsqueda exacta con NumPy basta; FAISS solo compensa a ×100."
+      candidatos: "NumPy exacto, FAISS Flat, FAISS HNSW y Chroma."
+      rendimiento: "Recall@k frente a la búsqueda exacta."
+      recursos: "Latencia p50/p95, tiempo de construcción, RAM, tamaño en disco; al tamaño real (2800 teasers y chunks de T2) y con escalado sintético ×10 y ×100."
+      criterio: "La opción más simple con recall 1,0 y latencia p95 < 10 ms al tamaño real."
+      entorno: "Portátil CPU de referencia."
+    acceptance:
+      - "Persistencia y compatibilidad con Windows comprobadas para cada opción."
+
+  - id: "25"
+    title: "Fine-tuning de encoders en español para T1 (baseline fuerte)"
+    epic: E5
+    type: experimento
+    area: T1
+    owners: [A]
+    reviewers: [B]
+    sprint: S2
+    points: 3
+    priority: P0
+    depends_on: ["13", "21"]
+    decision: "49"
+    goal: >-
+      Medir el techo práctico de un encoder supervisado con estos datos y su coste frente a LLM
+      + RAG.
+    prereg:
+      hipotesis: "Un RoBERTa-BNE fine-tuneado alcanza ≈0,80 de macro-F1 (4.º puesto de 2025) con un coste de inferencia muy inferior al de un LLM."
+      candidatos: "≥2 encoders: p. ej. PlanTL-GOB-ES/roberta-base-bne, dccuchile/bert-base-spanish-wwm-cased y roberta-large-bne si cabe en la GPU."
+      rendimiento: "macro-F1 en dev: media ± desviación con 3 semillas."
+      recursos: "Tiempo y energía de entrenamiento (GPU de Colab/Kaggle), latencia de inferencia por tweet en CPU y GPU, VRAM pico y tamaño."
+      criterio: "Mejor macro-F1 medio; el resultado es la referencia que #49 compara con LLM + RAG."
+      entorno: "Kaggle o Colab con la GPU registrada; misma GPU para todos los encoders."
+    acceptance:
+      - "Pérdida ponderada por clase y selección de checkpoint en dev."
+      - "Mejor checkpoint guardado fuera de git (Drive o HF Hub privado) con instrucciones de recarga."
+
+  - id: "26"
+    title: "Baselines de T2 sin LLM (lead, subtítulo, frase más similar, oráculo)"
+    epic: E6
+    type: feature
+    area: T2
+    owners: [B]
+    reviewers: [C]
+    sprint: S2
+    points: 2
+    priority: P0
+    depends_on: ["21", "22"]
+    goal: >-
+      Saber cuánto aporta el LLM frente a extraer una frase del artículo, dado que los spoilers
+      son muy extractivos.
+    acceptance:
+      - "Baselines: primera frase o primeros 280 caracteres, subtítulo, frase más similar al teaser (BM25 y embeddings) y oráculo extractivo (mejor frase según la referencia; cota superior, solo dev)."
+      - "BERTScore-F1, BLEU-4 y ROUGE-L en dev + IC95, y recursos."
+      - "Resultados en `results/26/` y filas en la tabla comparativa."
+
+  - id: "27"
+    title: "Capa LLM: cliente unificado, caché, prompts versionados y salida estructurada"
+    epic: E4
+    type: infra
+    area: comun
+    owners: [B]
+    reviewers: [A]
+    sprint: S2
+    points: 3
+    priority: P0
+    depends_on: ["12", "17"]
+    goal: >-
+      Cambiar de modelo o de backend sin tocar el código de T1 y T2 y no pagar dos veces la
+      misma inferencia.
+    acceptance:
+      - "Interfaz `LLMClient.generate(messages, params)` con el backend de ADR-001 y un backend alternativo para ensayos."
+      - "Prompts en `prompts/` (YAML o Jinja) con id y versión; el hash del prompt se guarda en cada resultado."
+      - "Caché en disco por (modelo, prompt, parámetros, semilla): repetir una ejecución no repite inferencias."
+      - "Salida estructurada (JSON schema, grammar o parser robusto) con la tasa de respuestas inválidas registrada."
+      - "Parámetros deterministas por defecto (temperature 0, semilla), timeouts y reintentos."
+      - "Integrada con el harness (tokens, latencia, energía) y con tests sobre un backend simulado."
+
+  - id: "28"
+    title: "Decisión: stack de recuperación (embeddings + índice)"
+    epic: E4
+    type: decision
+    area: comun
+    owners: [B, A, C]
+    reviewers: [A, C]
+    sprint: S2
+    points: 1
+    priority: P0
+    depends_on: ["23", "24"]
+    adr: "ADR-002-stack-recuperacion"
+    goal: >-
+      Fijar el modelo de embeddings y el índice vectorial compartidos por T1 y T2.
+    acceptance: []
+
+  - id: "29"
+    title: "Benchmark de LLMs candidatos en T1 (zero-shot)"
+    epic: E4
+    type: experimento
+    area: T1
+    owners: [C]
+    reviewers: [A]
+    sprint: S2
+    points: 3
+    priority: P0
+    depends_on: ["11", "27"]
+    decision: "33"
+    goal: >-
+      Elegir el LLM con mejor relación calidad/coste para clasificar teasers.
+    prereg:
+      hipotesis: "Un 7–12B cuantizado supera claramente a los ≤4B en macro-F1 con un coste de inferencia asumible en Colab."
+      candidatos: "≥4 modelos vigentes en nov-2026: ≥1 centrado en español (p. ej. Salamandra-Instruct), ≥1 de ≤4B viable en CPU y ≥1 de 7–12B cuantizado para Colab/Kaggle."
+      rendimiento: "macro-F1 + IC95 sobre detection_dev_gold (700), F1 por clase y % de salidas no parseables."
+      recursos: "Latencia p50/p95 por tweet, throughput, RAM/VRAM pico, energía por 1000 tweets, tamaño en disco y licencia."
+      criterio: "Máximo macro-F1; si los IC95 se solapan, gana el de menor energía por tweet."
+      entorno: "El mismo para todos los candidatos (p. ej. Kaggle T4), con el backend de ADR-001."
+    acceptance:
+      - "Prompt zero-shot común con la definición de clickbait de TA1C; evaluación sobre todo `detection_dev_gold`."
+
+  - id: "30"
+    title: "Benchmark de LLMs candidatos en T2 (artículo completo, zero-shot)"
+    epic: E4
+    type: experimento
+    area: T2
+    owners: [A]
+    reviewers: [C]
+    sprint: S2
+    points: 3
+    priority: P0
+    depends_on: ["21", "22", "27"]
+    decision: "33"
+    goal: >-
+      Elegir el LLM generador de spoilers y fijar el baseline «artículo completo» que el RAG
+      debe superar.
+    prereg:
+      hipotesis: "Con el artículo completo en contexto, un 7–12B cuantizado se acerca al ganador de 2025 (ROUGE-L ≈ 0,75)."
+      candidatos: "Los mismos de #29, para poder elegir un modelo común o uno por tarea."
+      rendimiento: "BERTScore-F1, BLEU-4 y ROUGE-L + IC95 sobre spoiling_dev_gold (100); % de salidas ≤280; ventana de contexto suficiente para el artículo más largo."
+      recursos: "Latencia p50/p95 (prefill de 1–6k tokens), tokens de entrada y salida, RAM/VRAM pico y energía por spoiler."
+      criterio: "Máximo ROUGE-L sin empeorar BERTScore fuera del IC95; desempate por energía y latencia."
+      entorno: "El mismo que #29."
+    acceptance:
+      - "Prompt zero-shot común; sus resultados quedan registrados como baseline «sin RAG» de T2."
+
+  - id: "31"
+    title: "Pipeline T1 LLM + RAG (few-shot dinámico) v1"
+    epic: E5
+    type: feature
+    area: T1
+    owners: [B]
+    reviewers: [C]
+    sprint: S2
+    points: 3
+    priority: P0
+    depends_on: ["14", "27"]
+    goal: >-
+      Primera versión de extremo a extremo del sistema de T1 basado en LLM con recuperación de
+      ejemplos etiquetados.
+    acceptance:
+      - "Recupera los k teasers de train más similares (capa de #14) y construye el prompt: definición de TA1C + k ejemplos etiquetados + teaser; salida estructurada `{label}`."
+      - "Solo se indexa train: dev y test nunca entran en la base de conocimiento (test unitario que lo comprueba)."
+      - "`uv run tapln t1 predict --config configs/t1_rag.yaml --split dev` genera predicciones, métricas y recursos."
+      - "macro-F1 en dev + IC95 con k = 5 (LLM provisional hasta ADR-003); salidas no parseables < 1 %."
+      - "Tests del constructor de prompts y del parser."
+
+  - id: "32"
+    title: "Pipeline T2 LLM + RAG v1"
+    epic: E6
+    type: feature
+    area: T2
+    owners: [A]
+    reviewers: [B]
+    sprint: S2
+    points: 3
+    priority: P0
+    depends_on: ["14", "22", "27"]
+    goal: >-
+      Primera versión de extremo a extremo del generador de spoilers con recuperación de
+      pasajes.
+    acceptance:
+      - "Flujo completo: extracción → chunking → embedding → índice por artículo → recuperación (consulta = teaser) → prompt (instrucción + few-shot + fragmentos + teaser) → generación → post-proceso."
+      - "Few-shot recuperados de train por similitud de teaser (capa de #14)."
+      - "Política de longitud explícita (≤280 caracteres, recorte por frase sin cortar palabras) y % de salidas recortadas registrado."
+      - "`uv run tapln t2 predict --config configs/t2_rag.yaml --split dev` genera predicciones, métricas y recursos."
+      - "Tests unitarios del chunker, del prompt y del post-proceso."
+
+  - id: "33"
+    title: "Decisión: LLM generador para T1 y T2"
+    epic: E4
+    type: decision
+    area: comun
+    owners: [C, A, B]
+    reviewers: [A, B]
+    sprint: S2
+    points: 1
+    priority: P0
+    depends_on: ["29", "30"]
+    adr: "ADR-003-llm-generador"
+    goal: >-
+      Fijar el LLM (común o uno por tarea) con sus licencias y su coste de inferencia.
+    acceptance:
+      - "Licencia de cada modelo elegido revisada y compatible con el uso académico."
+
+  - id: "34"
+    title: "Sprint 2 · Review y retrospectiva"
+    epic: E1
+    type: gestion
+    area: gestion
+    owners: [A, B, C]
+    reviewers: [C]
+    sprint: S2
+    phase: end
+    points: 2
+    priority: P0
+    depends_on: []
+    goal: >-
+      Inspeccionar lo entregado, recalibrar la estimación y mejorar el proceso.
+    acceptance: *review
+
+  # ===================== Sprint 3 · Ajuste y decisiones =====================
+
+  - id: "35"
+    title: "Sprint 3 · Planning"
+    epic: E1
+    type: gestion
+    area: gestion
+    owners: [B, A, C]
+    reviewers: [A]
+    sprint: S3
+    phase: start
+    points: 1
+    priority: P0
+    depends_on: ["34"]
+    goal: >-
+      Comprometer el alcance del Sprint 3 y decidir qué P2 entran según la velocity.
+    acceptance: *planning
+
+  - id: "36"
+    title: "Tests de significancia pareados (McNemar y bootstrap pareado)"
+    epic: E3
+    type: evaluacion
+    area: comun
+    owners: [B]
+    reviewers: [C]
+    sprint: S3
+    points: 2
+    priority: P1
+    depends_on: ["21"]
+    goal: >-
+      Saber si una mejora es real o ruido antes de adoptar una opción.
+    acceptance:
+      - "Test de McNemar para comparar dos clasificadores de T1 sobre los mismos ejemplos."
+      - "Bootstrap pareado (o permutación aproximada) para comparar dos sistemas de T2."
+      - "Integrado en `tapln results summarize` (p-valor frente al baseline elegido)."
+      - "Criterio de significancia (α = 0,05) y advertencia sobre comparaciones múltiples documentados en `PROTOCOLO.md`."
+
+  - id: "37"
+    title: "Benchmark de estrategias de recuperación en T2 (denso, BM25, híbrido, reranker)"
+    epic: E6
+    type: experimento
+    area: T2
+    owners: [A]
+    reviewers: [B]
+    sprint: S3
+    points: 3
+    priority: P0
+    depends_on: ["14", "22", "28"]
+    decision: "43"
+    goal: >-
+      Elegir cómo se recuperan los pasajes y si el reranker compensa su coste.
+    prereg:
+      hipotesis: "El híbrido (RRF) supera al denso puro porque los spoilers comparten términos literales con el teaser; el reranker aporta poco a este tamaño."
+      candidatos: "Denso (ADR-002), BM25 e híbrido RRF, cada uno con y sin reranker cross-encoder multilingüe sobre top-20; opcional, reformulación de la consulta (HyDE)."
+      rendimiento: "Recall@1/3/5, MRR y nDCG@5 sobre silver labels (dev)."
+      recursos: "Latencia p50/p95 por consulta, RAM/VRAM y energía; coste marginal del reranker."
+      criterio: "Máximo Recall@3; el reranker se adopta solo si mejora fuera del IC95."
+      entorno: "Portátil CPU de referencia (y GPU para el reranker si hace falta, registrada)."
+    acceptance:
+      - "Mismo chunking para todas las opciones (el mejor provisional de #40 o párrafo)."
+
+  - id: "38"
+    title: "LLM-as-a-judge: rúbrica y anotación humana de referencia"
+    epic: E3
+    type: evaluacion
+    area: T2
+    owners: [C, A, B]
+    reviewers: [B]
+    sprint: S3
+    points: 3
+    priority: P1
+    depends_on: ["26", "30"]
+    goal: >-
+      Complementar las métricas de n-gramas (que penalizan paráfrasis válidas) con un juez LLM
+      cuya fiabilidad esté medida frente a anotación humana.
+    acceptance:
+      - "Rúbrica (escala 1–5 o criterios binarios): responde a la curiosidad del teaser, fidelidad al artículo, concisión (≤280) y corrección; basada en Gu et al. (2025) y en la guía de Evidently (citadas)."
+      - "Muestra de 50 casos de dev, estratificada y anonimizada (salidas de ≥2 sistemas y referencias mezcladas), anotada por los tres de forma independiente y ciega."
+      - "Acuerdo inter-anotador (α de Krippendorff) reportado; desacuerdos discutidos y guía refinada."
+      - "Anotaciones en `results/38/human_ratings.csv` y protocolo en `doc/benchmarks/`."
+
+  - id: "39"
+    title: "T1 con el artículo como contexto (deteccion_extra, solo dev)"
+    epic: E5
+    type: experimento
+    area: T1
+    owners: [A]
+    reviewers: [C]
+    sprint: S3
+    points: 3
+    priority: P2
+    depends_on: ["31"]
+    decision: "54"
+    goal: >-
+      Medir si el artículo ayuda a detectar clickbait, aunque no pueda evaluarse en el test
+      oficial.
+    prereg:
+      hipotesis: "Añadir título y subtítulo del artículo mejora la detección en los casos con desacuerdo entre anotadores."
+      candidatos: "Solo teaser; teaser + título/subtítulo; teaser + top-k fragmentos recuperados del artículo."
+      rendimiento: "macro-F1 + IC95 en dev; desglose entre tweets unánimes y con desacuerdo entre anotadores."
+      recursos: "Tokens extra por tweet, latencia y energía."
+      criterio: "Solo informativo: test_gold no tiene artículos; se reporta como análisis en la memoria."
+      entorno: "El de #42."
+    acceptance:
+      - "Limitación (no evaluable en test) explicada en el informe."
+
+  - id: "40"
+    title: "Benchmark de estrategias de chunking (T2)"
+    epic: E6
+    type: experimento
+    area: T2
+    owners: [C]
+    reviewers: [A]
+    sprint: S3
+    points: 3
+    priority: P0
+    depends_on: ["28", "32"]
+    decision: "43"
+    goal: >-
+      Elegir la unidad de recuperación que mejor localiza la respuesta con el menor contexto.
+    prereg:
+      hipotesis: "Los chunks de párrafo o de ventana de frases recuperan mejor que los de tamaño fijo, con menos tokens."
+      candidatos: "Párrafo; frase; ventana de frases (±1); tamaño fijo en tokens (128 y 256, solape 0 y 25 %); opcional, chunking semántico."
+      rendimiento: "Recall@1/3/5 y MRR sobre silver labels (dev); ROUGE-L y BERTScore aguas abajo para las 2 mejores opciones."
+      recursos: "Nº de chunks por artículo, tokens en contexto para k = 1…5, tiempo de chunking + indexado, tamaño del índice y latencia."
+      criterio: "Máximo Recall@3; desempate por menos tokens en contexto."
+      entorno: "Portátil CPU de referencia; generación aguas abajo en el entorno de #30."
+    acceptance:
+      - "Recuperación densa por defecto (ADR-002) para aislar el efecto del chunking."
+
+  - id: "41"
+    title: "Datos externos para T2: NoticIA como pool few-shot"
+    epic: E6
+    type: experimento
+    area: T2
+    owners: [C]
+    reviewers: [A]
+    sprint: S3
+    points: 3
+    priority: P2
+    depends_on: ["32"]
+    decision: "54"
+    goal: >-
+      Comprobar si ampliar el pool de ejemplos con datos en español del mismo fenómeno mejora la
+      generación.
+    prereg:
+      hipotesis: "Añadir ejemplos de NoticIA similares al teaser mejora ROUGE-L, aunque sean titulares y no tweets."
+      candidatos: "Pool few-shot solo de train frente a train + NoticIA (filtrado por similitud)."
+      rendimiento: "Métricas oficiales + IC95 en dev."
+      recursos: "Tiempo de indexado extra, tokens de prompt y latencia."
+      criterio: "Se adopta si mejora ROUGE-L fuera del IC95 y la licencia lo permite (Apache-2.0 según la ficha de Hugging Face)."
+      entorno: "El de #50."
+    acceptance:
+      - "Licencia verificada y diferencias de dominio (titular frente a tweet) analizadas."
+
+  - id: "42"
+    title: "Ajuste del RAG de T1: k, selección de ejemplos y prompt"
+    epic: E5
+    type: experimento
+    area: T1
+    owners: [B]
+    reviewers: [A]
+    sprint: S3
+    points: 3
+    priority: P0
+    depends_on: ["31", "33"]
+    decision: "49"
+    goal: >-
+      Encontrar la configuración de few-shot dinámico con mejor relación calidad/coste.
+    prereg:
+      hipotesis: "Ejemplos similares y balanceados por clase mejoran el macro-F1 frente a zero-shot, con rendimientos decrecientes a partir de k ≈ 8."
+      candidatos: "k ∈ {0, 2, 4, 8, 16}; selección top-k similar, balanceada por clase, MMR y aleatoria (control); orden de los ejemplos; 2–3 variantes de prompt (definición breve o extendida, con o sin CoT)."
+      rendimiento: "macro-F1 + IC95 en dev para cada configuración."
+      recursos: "Tokens de prompt, latencia p50/p95 y energía por tweet (coste marginal de cada ejemplo añadido)."
+      criterio: "Mejor macro-F1; entre configuraciones con IC95 solapados, la de menos tokens de prompt."
+      entorno: "El de #29 con el LLM de ADR-003."
+    acceptance:
+      - "Diseño factorial reducido y justificado (no hace falta probar todas las combinaciones)."
+      - "Gráfico calidad vs. coste y 2–3 configuraciones finalistas para #49."
+
+  - id: "43"
+    title: "Decisión: pipeline de recuperación de T2 (chunking + retrieval + reranking)"
+    epic: E6
+    type: decision
+    area: T2
+    owners: [C, A, B]
+    reviewers: [A, B]
+    sprint: S3
+    points: 1
+    priority: P0
+    depends_on: ["37", "40"]
+    adr: "ADR-004-recuperacion-t2"
+    goal: >-
+      Fijar chunking, estrategia de recuperación, k y uso de reranker en T2.
+    acceptance: []
+
+  - id: "44"
+    title: "Fine-tuning QLoRA del generador de T2"
+    epic: E6
+    type: experimento
+    area: T2
+    owners: [B]
+    reviewers: [A]
+    sprint: S3
+    points: 5
+    priority: P2
+    depends_on: ["32", "33"]
+    decision: "54"
+    goal: >-
+      Medir si adaptar el LLM con 300 ejemplos supera al mejor prompting y a qué coste.
+    prereg:
+      hipotesis: "QLoRA mejora el estilo y la longitud de los spoilers, pero con 300 ejemplos el riesgo de sobreajuste es alto."
+      candidatos: "Mejor configuración de prompting sin ajuste frente a QLoRA sobre spoiling_train (y + NoticIA si #41 lo valida), modelo ≤8B en T4."
+      rendimiento: "Métricas oficiales + IC95 en dev; curvas de entrenamiento y validación."
+      recursos: "Tiempo y energía de entrenamiento, VRAM pico y latencia de inferencia con el adaptador."
+      criterio: "Se adopta si mejora fuera del IC95 y la inferencia cabe en el entorno de entrega."
+      entorno: "Kaggle o Colab con la GPU registrada."
+    acceptance:
+      - "Validación interna separada de dev para elegir checkpoint."
+
+  - id: "45"
+    title: "Benchmark de modelos juez (LLM-as-a-judge)"
+    epic: E3
+    type: experimento
+    area: T2
+    owners: [C]
+    reviewers: [B]
+    sprint: S3
+    points: 3
+    priority: P1
+    depends_on: ["27", "38"]
+    decision: "51"
+    goal: >-
+      Elegir el juez LLM más fiable frente a la anotación humana y con coste asumible.
+    prereg:
+      hipotesis: "Un juez de 7–12B con CoT y rúbrica explícita alcanza una correlación de Spearman ≥ 0,6 con la media humana."
+      candidatos: "≥3 jueces ejecutables en CPU o Colab, de familia distinta al generador (evita la self-preference); con y sin CoT; puntuación directa frente a comparación por pares."
+      rendimiento: "Spearman y Kendall con la media humana (#38), κ en aprobado/suspenso y sesgos de posición y de longitud."
+      recursos: "Latencia, tokens y energía por juicio; coste de evaluar dev completo."
+      criterio: "Máxima correlación con humanos; se descartan jueces con sesgo de posición > 10 %."
+      entorno: "Kaggle o Colab con la GPU registrada."
+    acceptance:
+      - "Sesgos medidos intercambiando el orden de las respuestas en la comparación por pares."
+
+  - id: "46"
+    title: "Capítulo de arquitectura del sistema (módulos, funciones, interacciones, E/S)"
+    epic: E8
+    type: docs
+    area: memoria
+    owners: [A]
+    reviewers: [B]
+    sprint: S3
+    points: 3
+    priority: P0
+    depends_on: ["28", "33"]
+    goal: >-
+      Cubrir el apartado obligatorio de arquitectura detallada con diagramas y tabla de módulos.
+    acceptance:
+      - "Diagrama general y uno por tarea (T1, T2) con módulos, flujos de datos y entradas/salidas."
+      - "Tabla de módulos: función, entradas, salidas, dependencias y fichero de código."
+      - "Coherente con los ADR aceptados; se actualiza tras #60."
+      - "Figuras legibles también en blanco y negro."
+
+  - id: "47"
+    title: "Herramientas de terceros y licencias"
+    epic: E8
+    type: docs
+    area: memoria
+    owners: [C]
+    reviewers: [B]
+    sprint: S3
+    points: 2
+    priority: P0
+    depends_on: ["28", "33"]
+    goal: >-
+      Cubrir el apartado obligatorio de herramientas de terceros con URL, descripción y
+      licencia.
+    acceptance:
+      - "Tabla con cada librería, modelo, dataset y servicio usado: URL, descripción (1 párrafo) y licencia, incluidas las de los modelos."
+      - "Generada en parte desde `uv.lock` (p. ej. `pip-licenses`) y revisada a mano."
+      - "Licencia de los datos de TA1C («no especificada por los autores») y de los datasets externos indicadas."
+      - "Tabla revisada tras #60 con los componentes finales."
+
+  - id: "48"
+    title: "Sistema híbrido de T1: encoder fine-tuneado + LLM-RAG"
+    epic: E5
+    type: experimento
+    area: T1
+    owners: [C]
+    reviewers: [A]
+    sprint: S3
+    points: 2
+    priority: P2
+    depends_on: ["25", "42"]
+    decision: "49"
+    goal: >-
+      Comprobar si combinar ambos enfoques mejora la calidad o reduce el coste.
+    prereg:
+      hipotesis: "Usar el LLM solo cuando el encoder duda mantiene o mejora el macro-F1 con mucho menos coste que LLM-RAG puro."
+      candidatos: "Voto ponderado encoder + LLM; LLM como desempate cuando |p − 0,5| < τ; predicción del encoder añadida al prompt."
+      rendimiento: "macro-F1 + IC95 en dev; % de tweets que llegan al LLM."
+      recursos: "Latencia y energía medias por tweet frente a LLM-RAG puro."
+      criterio: "Se adopta si mejora el macro-F1 fuera del IC95 o lo iguala con menor coste."
+      entorno: "El de #42."
+    acceptance:
+      - "Umbral τ elegido en dev con validación cruzada (no sobre el mismo split que se reporta)."
+
+  - id: "49"
+    title: "Decisión: enfoque final de T1"
+    epic: E5
+    type: decision
+    area: T1
+    owners: [A, B, C]
+    reviewers: [B, C]
+    sprint: S3
+    points: 1
+    priority: P0
+    depends_on: ["25", "42"]
+    adr: "ADR-005-enfoque-t1"
+    goal: >-
+      Fijar el sistema final de T1 (configuración de RAG, modelo y, en su caso, híbrido).
+    acceptance:
+      - "Restricción respetada: el sistema final de T1 usa LLM + RAG (tema registrado); el encoder es baseline o componente de un híbrido."
+      - "Decidido con qué base de conocimiento o entrenamiento se evalúa en test (train o train + dev) y por qué."
+    notes: "Si #48 (P2) se ha hecho, sus resultados entran como evidencia adicional."
+
+  - id: "50"
+    title: "Benchmark de estrategia de contexto y generación (T2)"
+    epic: E6
+    type: experimento
+    area: T2
+    owners: [B]
+    reviewers: [C]
+    sprint: S3
+    points: 5
+    priority: P0
+    depends_on: ["32", "33", "43"]
+    decision: "53"
+    goal: >-
+      Decidir si el RAG gana al artículo completo y cómo generar el spoiler (few-shot, CoT,
+      selección de candidatos).
+    prereg:
+      hipotesis: "Top-k fragmentos + few-shot recuperados igualan al artículo completo con muchos menos tokens; CoT y la selección por juez mejoran la fidelidad."
+      candidatos: "Contexto: artículo completo, top-k fragmentos (k ∈ {1, 3, 5}) o título + subtítulo + top-k. Few-shot: 0, estáticos o recuperados (n ∈ {1, 3, 5}). Razonamiento: directo o CoT. Selección: 1 muestra o n muestras + juez (ADR-006) o MBR."
+      rendimiento: "BERTScore-F1, BLEU-4 y ROUGE-L + IC95 en dev; puntuación del juez LLM; % ≤280; tasa de alucinación según el juez."
+      recursos: "Tokens de entrada y salida, latencia p50/p95 y energía por spoiler; frente de Pareto calidad-coste."
+      criterio: "Máximo ROUGE-L sin empeorar BERTScore fuera del IC95; desempate por energía por spoiler."
+      entorno: "El de #30 con el LLM de ADR-003."
+    acceptance:
+      - "Diseño factorial reducido y justificado; el baseline «artículo completo» de #30 incluido en la comparación."
+
+  - id: "51"
+    title: "Decisión: juez LLM y protocolo de evaluación"
+    epic: E3
+    type: decision
+    area: comun
+    owners: [C, A, B]
+    reviewers: [A, B]
+    sprint: S3
+    points: 1
+    priority: P1
+    depends_on: ["45"]
+    adr: "ADR-006-juez-llm"
+    goal: >-
+      Fijar el juez, la rúbrica y cómo se usa (métrica secundaria y/o selección de candidatos).
+    acceptance: []
+
+  - id: "52"
+    title: "Sistema final de T1: configuración, CLI y ficha del sistema"
+    epic: E5
+    type: feature
+    area: T1
+    owners: [A]
+    reviewers: [C]
+    sprint: S3
+    points: 2
+    priority: P0
+    depends_on: ["49"]
+    goal: >-
+      Dejar T1 listo para congelar: un comando, una configuración y documentación del sistema.
+    acceptance:
+      - "`configs/t1_final.yaml` con la configuración de ADR-005; un solo comando reproduce predicciones y métricas de dev."
+      - "Ficha `doc/model_card_t1.md`: datos, modelos, prompt, métricas en dev, recursos, limitaciones y licencias."
+      - "Test de extremo a extremo con 5 ejemplos (marcado `slow` si necesita modelo)."
+
+  - id: "53"
+    title: "Decisión: estrategia de contexto y generación de T2"
+    epic: E6
+    type: decision
+    area: T2
+    owners: [B, A, C]
+    reviewers: [A, C]
+    sprint: S3
+    points: 1
+    priority: P0
+    depends_on: ["50"]
+    adr: "ADR-007-generacion-t2"
+    goal: >-
+      Fijar el contexto, el prompt, el razonamiento y la selección de candidatos del sistema
+      final de T2.
+    acceptance:
+      - "Restricción respetada: el sistema final de T2 usa LLM + RAG; si el artículo completo gana, se documenta y se justifica el papel del RAG (few-shot recuperados, coste, modelos pequeños)."
+
+  - id: "54"
+    title: "Decisión: ampliaciones opcionales (artículo en T1, NoticIA, QLoRA, híbrido)"
+    epic: E7
+    type: decision
+    area: comun
+    owners: [A, B, C]
+    reviewers: [B, C]
+    sprint: S3
+    points: 1
+    priority: P2
+    depends_on: ["39", "41", "44", "48"]
+    adr: "ADR-008-ampliaciones"
+    goal: >-
+      Decidir qué ampliaciones terminadas entran en el sistema final y cuáles se reportan solo
+      como análisis.
+    acceptance:
+      - "Una decisión por cada ampliación terminada; las no realizadas se listan como trabajo futuro y se quitan de las dependencias de esta tarea."
+
+  - id: "55"
+    title: "Sistema final de T2: configuración, CLI y ficha del sistema"
+    epic: E6
+    type: feature
+    area: T2
+    owners: [A]
+    reviewers: [C]
+    sprint: S3
+    points: 2
+    priority: P0
+    depends_on: ["53"]
+    goal: >-
+      Dejar T2 listo para congelar: un comando, una configuración y documentación del sistema.
+    acceptance:
+      - "`configs/t2_final.yaml` con la configuración de ADR-004 y ADR-007; un solo comando reproduce predicciones y métricas de dev."
+      - "Ficha `doc/model_card_t2.md`: datos, modelos, prompt, métricas en dev, recursos, limitaciones y licencias."
+      - "Test de extremo a extremo con 5 ejemplos (marcado `slow` si necesita modelo)."
+
+  - id: "56"
+    title: "Demo integrada T1 → T2"
+    epic: E2
+    type: feature
+    area: comun
+    owners: [A]
+    reviewers: [B]
+    sprint: S3
+    points: 3
+    priority: P2
+    depends_on: ["52", "55"]
+    goal: >-
+      Mostrar el sistema completo en la defensa: detectar y, si es clickbait, destripar el
+      teaser.
+    acceptance:
+      - "App local (Gradio o CLI interactiva): teaser + texto del artículo → detección → spoiler de ≤280 caracteres con los fragmentos usados como evidencia."
+      - "Latencia extremo a extremo medida y mostrada."
+      - "Funciona en CPU con la configuración final (o indica claramente el requisito de GPU)."
+      - "Vídeo o GIF corto en `doc/img/` como respaldo para la defensa."
+
+  - id: "57"
+    title: "Sprint 3 · Review y retrospectiva"
+    epic: E1
+    type: gestion
+    area: gestion
+    owners: [C, A, B]
+    reviewers: [B]
+    sprint: S3
+    phase: end
+    points: 2
+    priority: P0
+    depends_on: []
+    goal: >-
+      Inspeccionar lo entregado, recalibrar la estimación y mejorar el proceso.
+    acceptance: *review
+
+  # ===================== Sprint 4 · Evaluación final y entrega =====================
+
+  - id: "58"
+    title: "Sprint 4 · Planning"
+    epic: E1
+    type: gestion
+    area: gestion
+    owners: [A, B, C]
+    reviewers: [B]
+    sprint: S4
+    phase: start
+    points: 1
+    priority: P0
+    depends_on: ["57"]
+    goal: >-
+      Planificar el cierre: congelación, test, memoria y entrega con margen de 24 h.
+    acceptance: *planning
+
+  - id: "59"
+    title: "Diario de Trabajo consolidado para la memoria"
+    epic: E8
+    type: docs
+    area: memoria
+    owners: [C]
+    reviewers: [B]
+    sprint: S4
+    points: 2
+    priority: P0
+    depends_on: []
+    goal: >-
+      Cubrir el apartado obligatorio del Diario: decisiones, técnicas probadas, fuentes y
+      resultados.
+    acceptance:
+      - "Diario completo y cronológico: qué se probó o consideró, en qué consistía, de dónde salió, si funcionó y su estado (adoptado, descartado o pendiente)."
+      - "Cada entrada enlaza a su EXP, ADR o PR."
+      - "Incluye actas de sprint y velocity."
+      - "Coherente con el historial de git y con el tablero."
+
+  - id: "60"
+    title: "Decisión: congelación de la arquitectura final"
+    epic: E7
+    type: decision
+    area: comun
+    owners: [B, A, C]
+    reviewers: [A, C]
+    sprint: S4
+    points: 2
+    priority: P0
+    depends_on: ["52", "55"]
+    adr: "ADR-009-arquitectura-final"
+    no_experiment_required: true
+    goal: >-
+      Congelar el sistema antes de tocar test para que el resultado final sea honesto.
+    acceptance:
+      - "Configuraciones finales de T1 y T2 congeladas (`configs/*_final.yaml`) y tag `v1.0-rc` en `develop`."
+      - "ADR-009 con el diagrama de la arquitectura final (módulos, entradas y salidas) y el resumen de ADR-001 a ADR-008."
+      - "Regla de congelación aceptada: desde aquí solo correcciones de errores, sin ajustar hiperparámetros ni prompts."
+
+  - id: "61"
+    title: "Evaluación final de T1 en test_gold y análisis de errores"
+    epic: E7
+    type: evaluacion
+    area: T1
+    owners: [C]
+    reviewers: [A]
+    sprint: S4
+    points: 3
+    priority: P0
+    depends_on: ["60"]
+    goal: >-
+      Obtener el resultado oficial de T1, comparable con el ranking de TA1C 2025.
+    acceptance:
+      - "Una única ejecución con `--final-test` sobre la configuración congelada; log, commit y hash de las predicciones guardados."
+      - "macro-F1 + IC95 en test; comparación con los baselines (McNemar) y posición hipotética en el ranking oficial."
+      - "Recursos de la ejecución completa: tiempo, energía y latencia media."
+      - "Análisis de errores: matriz de confusión, 30 FP/FN categorizados y relación con el desacuerdo entre anotadores (en dev)."
+      - "Predicciones en `results/61/` en el formato de la competición."
+
+  - id: "62"
+    title: "Evaluación final de T2 en test_gold y análisis de errores"
+    epic: E7
+    type: evaluacion
+    area: T2
+    owners: [A]
+    reviewers: [C]
+    sprint: S4
+    points: 3
+    priority: P0
+    depends_on: ["60"]
+    goal: >-
+      Obtener el resultado oficial de T2, comparable con el ranking de TA1C 2025.
+    acceptance:
+      - "Una única ejecución con `--final-test` sobre la configuración congelada; log, commit y hash de las predicciones guardados."
+      - "Métricas oficiales + IC95 en test, puntuación del juez LLM y comparación con los baselines (bootstrap pareado) y con el ranking oficial."
+      - "Recursos de la ejecución completa: tiempo, energía y latencia media."
+      - "Análisis de errores: 30 fallos categorizados (pasaje equivocado, alucinación, incompleto, demasiado largo, paráfrasis penalizada por la métrica), separando errores de recuperación y de generación con las silver labels."
+      - "Predicciones en `results/62/`."
+
+  - id: "63"
+    title: "Ablaciones y resumen de eficiencia (rendimiento frente a recursos)"
+    epic: E7
+    type: evaluacion
+    area: comun
+    owners: [C]
+    reviewers: [B]
+    sprint: S4
+    points: 3
+    priority: P0
+    depends_on: ["60"]
+    goal: >-
+      Cuantificar qué aporta cada componente y cuánto cuesta, para la memoria y la defensa.
+    acceptance:
+      - "Tabla de ablación de T1 y T2 en dev (sin recuperación, sin reranker, sin few-shot, sin CoT…) con IC95."
+      - "Figura global calidad vs. latencia, energía y VRAM de todos los sistemas probados (frente de Pareto)."
+      - "Huella total del proyecto: kWh y kgCO₂eq acumulados de todos los resultados registrados."
+
+  - id: "64"
+    title: "Manual de instalación y uso"
+    epic: E8
+    type: docs
+    area: memoria
+    owners: [A]
+    reviewers: [B]
+    sprint: S4
+    points: 2
+    priority: P0
+    depends_on: ["60"]
+    goal: >-
+      Que el profesor pueda instalar y ejecutar el sistema sin ayuda.
+    acceptance:
+      - "Requisitos (SO, Python, uv, GPU opcional), instalación (`uv sync` o `pip install -r requirements.txt`), obtención de datos y ejecución de T1, T2 y de la evaluación."
+      - "Probado por otro miembro desde un clon limpio siguiendo el texto al pie de la letra (#71)."
+      - "Solución de problemas frecuentes (Windows, Colab, memoria insuficiente)."
+
+  - id: "65"
+    title: "Capítulo T1: método, experimentos y resultados"
+    epic: E8
+    type: docs
+    area: memoria
+    owners: [B]
+    reviewers: [A]
+    sprint: S4
+    points: 3
+    priority: P0
+    depends_on: ["61"]
+    goal: >-
+      Contar T1 de principio a fin con evidencias trazables.
+    acceptance:
+      - "Método final y alternativas probadas, con referencia a cada EXP y ADR."
+      - "Tablas de dev y test con IC95; comparación con baselines y con el ranking oficial."
+      - "Recursos del sistema final (tiempo, energía, latencia)."
+      - "Análisis de errores con ejemplos."
+      - "Todas las cifras trazables a un fichero de `results/`."
+
+  - id: "66"
+    title: "Capítulo T2: método, experimentos y resultados"
+    epic: E8
+    type: docs
+    area: memoria
+    owners: [B]
+    reviewers: [C]
+    sprint: S4
+    points: 3
+    priority: P0
+    depends_on: ["62"]
+    goal: >-
+      Contar T2 de principio a fin con evidencias trazables.
+    acceptance:
+      - "Método final y alternativas probadas, con referencia a cada EXP y ADR."
+      - "Tablas de dev y test con IC95; comparación con baselines y con el ranking oficial."
+      - "Recursos del sistema final (tiempo, energía, latencia)."
+      - "Análisis de errores con ejemplos."
+      - "Todas las cifras trazables a un fichero de `results/`."
+
+  - id: "67"
+    title: "Capítulo de decisiones de arquitectura y eficiencia"
+    epic: E8
+    type: docs
+    area: memoria
+    owners: [B]
+    reviewers: [A]
+    sprint: S4
+    points: 2
+    priority: P0
+    depends_on: ["63"]
+    goal: >-
+      Mostrar cómo se decidió cada componente con métricas de rendimiento y de recursos.
+    acceptance:
+      - "Para cada ADR: opciones evaluadas, métricas de rendimiento y de recursos, decisión y motivo (tabla resumen + 1 párrafo)."
+      - "Frente de Pareto calidad-coste y huella total del proyecto."
+      - "Metodología de medición resumida (PROTOCOLO.md) con sus limitaciones (p. ej. energía estimada por TDP en CPU)."
+
+  - id: "68"
+    title: "Introducción, conclusiones y trabajo futuro"
+    epic: E8
+    type: docs
+    area: memoria
+    owners: [A]
+    reviewers: [C]
+    sprint: S4
+    points: 2
+    priority: P0
+    depends_on: ["65", "66"]
+    goal: >-
+      Enmarcar el trabajo y cerrar con conclusiones respaldadas por los resultados.
+    acceptance:
+      - "Introducción: tarea TA1C, datos, objetivos y contribuciones."
+      - "Conclusiones apoyadas en resultados de test y en las decisiones (sin afirmaciones sin evidencia)."
+      - "Trabajo futuro con las ampliaciones no realizadas y las limitaciones."
+
+  - id: "69"
+    title: "Revisión final cruzada de la memoria"
+    epic: E8
+    type: docs
+    area: memoria
+    owners: [A, B, C]
+    reviewers: [B, C]
+    sprint: S4
+    points: 3
+    priority: P0
+    depends_on: ["46", "47", "59", "64", "65", "66", "67", "68"]
+    goal: >-
+      Entregar una memoria coherente, dentro del límite y sin errores.
+    acceptance:
+      - "≤20 páginas verificadas (sin portada, índices, bibliografía ni apéndices)."
+      - "Cada miembro revisa los capítulos que no ha escrito con la checklist del issue."
+      - "Todas las cifras coinciden con `results/` y todas las figuras y tablas se citan en el texto."
+      - "Ortografía, estilo y formato homogéneos; bibliografía completa."
+      - "PDF final exportado en `doc/`."
+
+  - id: "70"
+    title: "Release v1.0 y paquete de entrega (.zip con src/ y doc/)"
+    epic: E9
+    type: entrega
+    area: memoria
+    owners: [A]
+    reviewers: [B]
+    sprint: S4
+    points: 1
+    priority: P0
+    depends_on: ["69"]
+    goal: >-
+      Generar exactamente lo que pide el enunciado desde una versión etiquetada.
+    acceptance:
+      - "PR `develop → main` aprobada por los otros dos y tag `v1.0` en `main`."
+      - "`.zip` con exactamente `src/` (código, `pyproject.toml`, `uv.lock`, `requirements.txt`, `configs/`, `prompts/`, README) y `doc/` (memoria en PDF)."
+      - "Sin datos, secretos, modelos ni cachés; tamaño revisado."
+      - "Nombre del fichero según el número de grupo asignado."
+
+  - id: "71"
+    title: "Prueba de humo desde cero siguiendo solo el manual"
+    epic: E9
+    type: entrega
+    area: memoria
+    owners: [B]
+    reviewers: [C]
+    sprint: S4
+    points: 1
+    priority: P0
+    depends_on: ["70"]
+    goal: >-
+      Garantizar que el paquete se instala y funciona fuera de nuestras máquinas.
+    acceptance:
+      - "En otra máquina o en un Colab limpio: descomprimir, instalar y ejecutar T1 y T2 sobre 5 ejemplos siguiendo solo el manual."
+      - "Tiempo de instalación anotado; cualquier fallo corregido y el zip regenerado."
+
+  - id: "72"
+    title: "Subida de la entrega al campus virtual"
+    epic: E9
+    type: entrega
+    area: memoria
+    owners: [A]
+    reviewers: [C]
+    sprint: S4
+    points: 1
+    priority: P0
+    depends_on: ["71"]
+    goal: >-
+      Entregar con margen y con evidencia de lo entregado.
+    acceptance:
+      - "Subida por el portavoz antes del jueves 17-dic a las 23:59 (24 h de margen sobre el plazo del viernes 18-dic 23:55)."
+      - "Captura de la confirmación y SHA-256 del zip registrados en el Diario."
+      - "El contenido del zip coincide con el tag `v1.0`."
+
+  - id: "73"
+    title: "Sprint 4 · Retrospectiva final del proyecto"
+    epic: E1
+    type: gestion
+    area: gestion
+    owners: [B, A, C]
+    reviewers: [C]
+    sprint: S4
+    phase: end
+    points: 2
+    priority: P0
+    depends_on: ["72"]
+    goal: >-
+      Cerrar el proyecto: comparar plan y realidad y extraer lecciones para la defensa.
+    acceptance:
+      - "Comparativa plan (este backlog) frente a lo realizado: puntos, sprints y desviaciones principales."
+      - "Velocity de los cuatro sprints registrada (tabla en el Diario)."
+      - "Retrospectiva final Start / Stop / Continue."
+      - "Registro de riesgos cerrado: qué riesgos se materializaron y cómo se gestionaron."
+      - "Lecciones aprendidas trasladadas al guion de la defensa (#74)."
+      - "Acta en el Diario."
+
+  # ===================== Defensa =====================
+
+  - id: "74"
+    title: "Presentación para la defensa"
+    epic: E9
+    type: entrega
+    area: memoria
+    owners: [C]
+    reviewers: [A]
+    sprint: DEF
+    points: 3
+    priority: P0
+    depends_on: ["72"]
+    goal: >-
+      Contar el trabajo en el tiempo asignado y demostrar que funciona.
+    acceptance:
+      - "Diapositivas: problema, datos, arquitectura, decisiones con métricas, resultados frente al ranking, eficiencia y lecciones aprendidas."
+      - "Reparto del tiempo entre los tres; demo en directo y vídeo de respaldo."
+      - "Revisada por los otros dos."
+
+  - id: "75"
+    title: "Ensayos de la defensa y preparación de preguntas"
+    epic: E9
+    type: entrega
+    area: memoria
+    owners: [B, A, C]
+    reviewers: [A, C]
+    sprint: DEF
+    points: 2
+    priority: P0
+    depends_on: ["74"]
+    goal: >-
+      Que cualquiera de los tres pueda explicar cualquier parte del sistema.
+    acceptance:
+      - "≥2 ensayos cronometrados."
+      - "Lista de ≥20 preguntas probables con respuesta, incluidas preguntas sobre módulos de otros miembros."
+      - "Cada miembro explica sin ayuda cualquier módulo del sistema."

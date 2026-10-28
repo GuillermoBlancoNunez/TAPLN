@@ -1,0 +1,7 @@
+# Revisores que se solicitan automáticamente en cada PR (ver CONTRIBUTING.md §7).
+# GitHub no pide revisión al autor, así que cada PR la reciben los otros dos.
+# Quien debe aprobar es el del campo «Revisor» del issue; el otro revisa si puede.
+# Mantener «Require review from Code Owners» DESACTIVADO para evitar bloqueos:
+# la regla de rama exige 1 aprobación de cualquier otro miembro.
+
+*  @GuillermoBlancoNunez @MiguelBanosB @fizge

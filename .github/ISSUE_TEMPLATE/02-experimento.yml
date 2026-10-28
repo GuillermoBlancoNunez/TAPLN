@@ -1,0 +1,111 @@
+name: Experimento (benchmark)
+description: Comparar opciones de modelo o arquitectura midiendo rendimiento y recursos. Alimenta una decisión (DEC).
+title: "[NN] Benchmark de "
+labels: ["tipo:experimento"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Sigue el protocolo de benchmarks (`doc/benchmarks/PROTOCOLO.md`).
+        **El pre-registro se rellena y se fija ANTES de ejecutar.** Si luego cambia algo, se documenta como desviación.
+  - type: input
+    id: decision
+    attributes:
+      label: Decisión que alimenta
+      placeholder: "#33 → ADR-003-llm-generador"
+    validations:
+      required: true
+  - type: textarea
+    id: objetivo
+    attributes:
+      label: Objetivo
+      description: Qué pregunta responde este experimento.
+    validations:
+      required: true
+  - type: textarea
+    id: hipotesis
+    attributes:
+      label: Hipótesis
+      description: Qué esperáis y por qué (con una fuente si existe).
+    validations:
+      required: true
+  - type: textarea
+    id: candidatos
+    attributes:
+      label: Candidatos
+      description: Al menos 3 opciones (o justificación) más un baseline sencillo.
+      value: |
+        1.
+        2.
+        3.
+        - Baseline:
+    validations:
+      required: true
+  - type: textarea
+    id: rendimiento
+    attributes:
+      label: Métricas de rendimiento
+      description: Principal y secundarias, siempre sobre dev y con IC95.
+      value: |
+        - Principal:
+        - Secundarias:
+    validations:
+      required: true
+  - type: textarea
+    id: recursos
+    attributes:
+      label: Métricas de recursos
+      value: |
+        - Tiempo de carga y tiempo total (s)
+        - Latencia p50 / p95 por muestra (ms)
+        - Throughput (muestras/s; tokens/s en LLMs)
+        - RAM y VRAM pico (MB)
+        - Energía (kWh y kWh/1000 muestras) y CO₂eq, indicando el método (nvml / rapl / tdp)
+        - Tamaño del modelo y licencia
+    validations:
+      required: true
+  - type: textarea
+    id: criterio
+    attributes:
+      label: Criterio de decisión
+      description: Restricciones duras, métrica principal y desempate por coste.
+      placeholder: "Descartar si VRAM > 15 GB; máximo macro-F1; si los IC95 se solapan, menor energía por muestra."
+    validations:
+      required: true
+  - type: textarea
+    id: entorno
+    attributes:
+      label: Entorno de medición
+      value: |
+        - Plataforma: local / Colab / Kaggle
+        - CPU · RAM:
+        - GPU · VRAM:
+        - Backend y versiones clave:
+    validations:
+      required: true
+  - type: textarea
+    id: criterios
+    attributes:
+      label: Criterios de aceptación
+      value: |
+        - [ ] Pre-registro completado y fijado antes de ejecutar.
+        - [ ] Todas las opciones medidas en el mismo entorno, con el hardware registrado.
+        - [ ] Rendimiento con IC95 según el pre-registro.
+        - [ ] Recursos: tiempo total, latencia p50/p95, RAM/VRAM pico y energía (método declarado).
+        - [ ] Resultados en `results/NN/` con el esquema común y resumen (tabla + gráfico calidad vs. coste) en este issue.
+        - [ ] Borrador del ADR con contexto, opciones y tabla de evidencias, listo para la reunión de decisión.
+        - [ ] Entrada en `Diario_de_trabajo.md` con las opciones probadas y su resultado.
+  - type: dropdown
+    id: prioridad
+    attributes:
+      label: Prioridad
+      options: ["P0 · Must", "P1 · Should", "P2 · Could"]
+    validations:
+      required: true
+  - type: dropdown
+    id: puntos
+    attributes:
+      label: Puntos (1 ≈ 2 h)
+      options: ["1", "2", "3", "5", "8 (mejor dividir)"]
+    validations:
+      required: true
