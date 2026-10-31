@@ -20,6 +20,11 @@
 #   - points: 1 punto ≈ 2 h de una persona (recalibrar con la velocity del S1).
 #   - priority: P0 = Must (no se recorta), P1 = Should, P2 = Could (ampliación).
 #   - Cada experimento (tipo experimento) alimenta una decisión, que produce un ADR.
+#   - Los IDs no se renumeran nunca: `apply` empareja cada issue con su tarea por el ID.
+#     Las tareas añadidas tras el bootstrap (76–79) van al final y en GitHub quedan
+#     detrás de las épicas (ver project.numbering_note).
+#   - El repo será público al acabar (#79): nada de secretos, datos del corpus ni
+#     material de la asignatura en git (CONTRIBUTING §14).
 # =============================================================================
 
 version: 2
@@ -33,6 +38,7 @@ project:
   release_branch: main
   delivery_deadline: "2026-12-18 23:55 (Europe/Madrid)"
   delivery_target: 2026-12-17
+  numbering_note: "Las tareas 76–79 se añadieron después del bootstrap. En GitHub van detrás de las épicas (#76–#84): la tarea 76 es el issue #85, la 79 el #88 y la épica E10 el #89, si no se crea ningún otro issue o PR antes de relanzar `apply`. El título de cada issue lleva siempre su número de tarea [NN]."
 
 capacity:
   hours_per_point: 2
@@ -71,6 +77,11 @@ sprints:
     start: 2026-12-19
     end: null
     goal: "Presentación y ensayos para la defensa del día del examen."
+  - id: PUB
+    title: "Publicación"
+    start: 2026-12-21
+    end: 2027-01-10
+    goal: "Tras la entrega y sin competir con ella: API de inferencia en Docker, encoder en Hugging Face Hub, README bilingüe y auditoría antes de hacer público el repo."
 
 labels:
   types:
@@ -174,6 +185,12 @@ epics:
     area: memoria
     goal: >-
       Entregar a tiempo un paquete instalable y verificado y preparar la defensa.
+  - id: E10
+    title: "Publicación del proyecto"
+    area: comun
+    goal: >-
+      Convertir la práctica entregada en un proyecto público, reutilizable y seguro: servicio
+      de inferencia, modelo en Hugging Face, README bilingüe y auditoría previa a la publicación.
 
 # -----------------------------------------------------------------------------
 # Riesgos (se revisan en cada Sprint Review)
@@ -219,7 +236,7 @@ risks:
     risk: "Licencias: datos de TA1C sin licencia explícita y modelos con licencias restrictivas."
     probability: Baja
     impact: Medio
-    mitigation: "No redistribuir datos en el zip; tabla de licencias en #47; elegir modelos con licencia compatible con uso académico."
+    mitigation: "Datos fuera de git desde #01 (se descargan de las fuentes oficiales); no redistribuirlos en el zip ni en el repo público; tabla de licencias en #47; modelos con licencia compatible; pesos publicados en #77 solo tras consultar a los organizadores."
     owner: C
   - id: R8
     risk: "Coste de contexto por la rotación: quien hace una tarea no siempre hizo la anterior."
@@ -239,6 +256,12 @@ risks:
     impact: Medio
     mitigation: "Capacidad declarada en cada Planning, recorte según el orden de prioridades, todo documentado en issues y PRs."
     owner: A
+  - id: R11
+    risk: "Al hacer público el repo quedan expuestos secretos, datos sin licencia, material de la asignatura o datos personales (el historial de git es permanente)."
+    probability: Media
+    impact: Alto
+    mitigation: "Historial limpiado en #01 con un solo commit; gitleaks y nbstripout en pre-commit y CI (#10); Definition of Done y CONTRIBUTING §14; auditoría completa antes de publicar (#79); un secreto filtrado se revoca, no basta con borrarlo."
+    owner: A
 
 # Orden de recorte si la velocity real es menor que la planificada (los P0 no se recortan)
 scope_cut:
@@ -247,6 +270,7 @@ scope_cut:
   - "3. #36: mantener los IC95 por bootstrap de #21 y prescindir de los tests pareados."
   - "4. #45 + #51: usar un único juez sin benchmark, declarado como limitación en la memoria."
   - "5. #20: agregar resultados con un script mínimo sin decisión de herramienta."
+  - "6. Publicación (#76–#79): va después de la entrega y no compite con ella; se puede aplazar, pero el repo no se hace público sin #79."
 
 # -----------------------------------------------------------------------------
 # Tareas, numeradas en orden de ejecución
@@ -264,12 +288,13 @@ items:
     reviewers: [B]
     sprint: S1
     phase: start
-    points: 2
+    points: 3
     priority: P0
     depends_on: []
     goal: >-
       Dejar el repo nuevo y el GitHub Project listos para trabajar: colaboradores, permisos,
-      vistas, automatizaciones y protección de ramas.
+      vistas, automatizaciones y protección de ramas; y el repo, preparado desde el principio para
+      hacerse público al acabar (CONTRIBUTING §14).
     acceptance:
       - "Repo creado desde cero con el contenido actual (datos comprimidos, README, Diario, `pyproject.toml`, `uv.lock` y kit de gestión) en `main`, y rama `develop` creada desde `main`."
       - "@MiguelBanosB y @fizge son colaboradores con permiso *Write* (invitación aceptada) y tienen asignadas sus tareas (relanzar `apply` si faltaba alguno)."
@@ -279,6 +304,10 @@ items:
       - "Vistas creadas (a mano si la API falla, según `gestion/README.md`) y workflows activos: auto-add, item cerrado → Done, PR fusionada → Done y PR enlazada → In review (si existe)."
       - "Protección de `main` y `develop`: PR obligatoria, 1 aprobación y conversaciones resueltas (o constancia en el Diario si el plan de GitHub no lo permite)."
       - "Captura del tablero en `doc/img/tablero_S1.png` para la memoria."
+      - "Repo apto para ser público: `Data/*.tar.gz`, `enunciado.pdf` y los dos `github-plantillas.zip` fuera del índice **y del historial** (`git filter-repo`) mientras solo existe el commit inicial; force-push coordinado de `main`, `develop` y `feat/05-eda-t1` (quitando un momento la protección) y los otros dos vuelven a clonar."
+      - "Datos fuera de git: `Data/` en `.gitignore`, `Data/SHA256SUMS` versionado y descarga documentada en el README desde las fuentes oficiales (pln-inco-resources y gmordecki/TA1C) hasta que #11 la automatice."
+      - "Los tres usan como `user.email` su dirección *noreply* de GitHub y activan «Keep my email addresses private»; el commit inicial se reescribe con esa dirección (`git filter-repo --mailmap`)."
+      - "Decisión anotada en el Diario: los datos dejan de versionarse (sustituye a la entrada del 2026-10-21)."
     notes: "La hace quien crea el repo: solo el propietario puede cambiar ajustes, permisos y el Project."
 
   - id: "02"
@@ -343,7 +372,7 @@ items:
       - "Dependencias base añadidas con `uv add` y `uv.lock` actualizado."
       - "Carga de configuración YAML validada (pydantic o dataclasses) con un ejemplo comentado en `configs/`."
       - "`.env.example` con las variables necesarias (p. ej. `HF_TOKEN`), sin valores reales."
-      - "README: «Instalación rápida» (`uv sync`, extracción de datos) y exportación de `requirements.txt` (`uv export --format requirements-txt`)."
+      - "README: «Instalación rápida» (`uv sync` y obtención de los datos) y exportación de `requirements.txt` (`uv export --format requirements-txt`)."
 
   - id: "05"
     title: "EDA de detección (train y dev)"
@@ -461,8 +490,9 @@ items:
       formato.
     acceptance:
       - "`ruff` (lint + format) y `pytest` configurados en `pyproject.toml` (grupo `dev` de uv)."
-      - "`pre-commit` con ruff, `end-of-file-fixer`, `trailing-whitespace`, `check-added-large-files` (≤1 MB) y `detect-private-key`."
+      - "`pre-commit` con ruff, `end-of-file-fixer`, `trailing-whitespace`, `check-added-large-files` (≤1 MB), `detect-private-key`, `gitleaks` (secretos) y `nbstripout` (notebooks sin salidas, que mostrarían textos del corpus)."
       - "`.github/workflows/ci.yml`: en PR y push a `develop`/`main` ejecuta `uv sync --frozen`, `ruff check`, `ruff format --check` y `pytest -m \"not slow\"` en < 5 min."
+      - "Job `gitleaks` en la CI sobre cada PR, para cubrir a quien no tenga pre-commit instalado."
       - "Tests que necesitan modelos o red marcados como `slow` y excluidos de la CI."
       - "CI en verde en la propia PR y badge en el README."
       - "Check de CI exigido en la protección de `develop` y `main` (si el plan de GitHub lo permite)."
@@ -483,10 +513,10 @@ items:
     acceptance:
       - "`tapln.data` carga los 9 CSV (detección, spoiler y detección_extra) con tipos y nombres de columna normalizados."
       - "`Article Text JSON` se convierte en `title`, `subtitle` y `paragraphs` (lista) con normalización de espacios y caracteres de control."
-      - "Validaciones al cargar: nº de filas (2800/700/700, 300/100/100, 3500), IDs únicos, sin solapamiento entre splits y etiquetas válidas; SHA-256 de los `.tar.gz` comprobado."
+      - "Validaciones al cargar: nº de filas (2800/700/700, 300/100/100, 3500), IDs únicos, sin solapamiento entre splits y etiquetas válidas; SHA-256 de cada CSV comprobado contra `Data/SHA256SUMS` (#01)."
       - "Cualquier `test_gold` solo se carga con `allow_test=True` (CLI `--final-test`) y queda registrado en el log; hay un test unitario que lo verifica."
       - "Cruce `deteccion` ↔ `deteccion_extra` por `Tweet ID` (artículo y etiquetas por anotador) disponible para train y dev."
-      - "Comando `tapln data extract` multiplataforma equivalente a los `tar -xzf` del README."
+      - "Comando `tapln data download` multiplataforma: descarga los CSV de las fuentes oficiales y verifica los hashes; si faltan, la carga falla indicando ese comando."
       - "Tests con fixtures sintéticas: la CI no depende de los CSV reales."
 
   - id: "12"
@@ -793,7 +823,7 @@ items:
       entorno: "Kaggle o Colab con la GPU registrada; misma GPU para todos los encoders."
     acceptance:
       - "Pérdida ponderada por clase y selección de checkpoint en dev."
-      - "Mejor checkpoint guardado fuera de git (Drive o HF Hub privado) con instrucciones de recarga."
+      - "Mejor checkpoint guardado fuera de git, en un repo privado de HF Hub (idealmente en la organización del equipo, que se hace público en #77), con instrucciones de recarga."
 
   - id: "26"
     title: "Baselines de T2 sin LLM (lead, subtítulo, frase más similar, oráculo)"
@@ -835,6 +865,7 @@ items:
       - "Salida estructurada (JSON schema, grammar o parser robusto) con la tasa de respuestas inválidas registrada."
       - "Parámetros deterministas por defecto (temperature 0, semilla), timeouts y reintentos."
       - "Integrada con el harness (tokens, latencia, energía) y con tests sobre un backend simulado."
+      - "Claves de API solo por variables de entorno (`.env`): nunca en código, `configs/`, prompts, caché ni logs; la caché, fuera de git."
 
   - id: "28"
     title: "Decisión: stack de recuperación (embeddings + índice)"
@@ -1794,3 +1825,96 @@ items:
       - "≥2 ensayos cronometrados."
       - "Lista de ≥20 preguntas probables con respuesta, incluidas preguntas sobre módulos de otros miembros."
       - "Cada miembro explica sin ayuda cualquier módulo del sistema."
+
+  # ===================== Publicación (tras la entrega) =====================
+
+  - id: "76"
+    title: "Servicio de inferencia: API REST de T1 y T2 en Docker"
+    epic: E10
+    type: feature
+    area: comun
+    owners: [B]
+    reviewers: [A]
+    sprint: PUB
+    points: 3
+    priority: P1
+    depends_on: ["52", "55", "72"]
+    goal: >-
+      Servir los sistemas finales congelados (ADR-009) para que cualquiera pueda levantarlos con
+      un comando, sin tocar el código de T1 y T2.
+    acceptance:
+      - "`src/tapln/serve/` con FastAPI: `POST /v1/detect` (teaser → etiqueta y puntuación), `POST /v1/spoil` (teaser + artículo → spoiler de ≤280 caracteres) y `GET /health`; esquemas pydantic y OpenAPI en `/docs`."
+      - "Modelos cargados una sola vez al arrancar con la configuración congelada de #52 y #55; entradas validadas (longitud máxima) y errores con códigos HTTP claros."
+      - "`Dockerfile` multi-stage para CPU (`uv sync --frozen --no-dev`, usuario no root) y `docker compose up` documentado; los pesos no van en la imagen: se descargan al arrancar o se montan como volumen."
+      - "Configuración solo por variables de entorno (`.env.example` actualizado); ningún secreto en la imagen, el compose ni los logs."
+      - "Tests con `TestClient` sobre un backend simulado en la CI y prueba de humo `slow` con los modelos reales."
+      - "Latencia p50/p95 y RAM pico por endpoint medidas con el harness de #12 y anotadas en el README."
+    notes: "Opcional: desplegar la misma imagen como Hugging Face Space (SDK Docker) para tener una demo pública."
+
+  - id: "77"
+    title: "Publicación del encoder fine-tuneado en Hugging Face Hub"
+    epic: E10
+    type: entrega
+    area: T1
+    owners: [A]
+    reviewers: [C]
+    sprint: PUB
+    points: 2
+    priority: P1
+    depends_on: ["25", "47", "61", "72"]
+    goal: >-
+      Dejar el mejor encoder de T1 como un modelo público, reutilizable y documentado, con las
+      métricas oficiales.
+    acceptance:
+      - "Organización de HF del equipo con los tres como miembros; el modelo, en un repo público de la organización (p. ej. `tapln-udc/ta1c-clickbait-roberta-bne`)."
+      - "Pesos en `safetensors`, tokenizer y `config.json` con etiquetas legibles en `id2label`; `pipeline(\"text-classification\")` funciona desde un entorno limpio."
+      - "Model card en español e inglés: modelo base y su licencia, datos, hiperparámetros, macro-F1 en dev y en test con IC95 (de #61), recursos (energía de entrenamiento y latencia), uso previsto, limitaciones, sesgos y cómo citar."
+      - "Licencia del modelo compatible con la del modelo base; uso de los datos de TA1C consultado con los organizadores y la respuesta (o su ausencia) indicada en la model card."
+      - "Widget de inferencia probado con 3 ejemplos; enlace al modelo desde el README y la memoria."
+      - "Token de HF solo en el entorno local (`huggingface-cli login` o `HF_TOKEN` en `.env`), nunca en el repo, los notebooks ni los logs."
+    notes: "Si los organizadores no permiten publicar pesos entrenados con sus datos, se publica solo la model card con el código de entrenamiento y se anota en el Diario."
+
+  - id: "78"
+    title: "README público bilingüe (español e inglés)"
+    epic: E10
+    type: docs
+    area: memoria
+    owners: [A]
+    reviewers: [B]
+    sprint: PUB
+    points: 2
+    priority: P1
+    depends_on: ["61", "62", "63", "64", "76", "77"]
+    goal: >-
+      Que quien llegue al repo entienda en 30 segundos qué hace el sistema, qué resultados
+      obtiene y cómo probarlo.
+    acceptance:
+      - "`README.md` en inglés y `README.es.md` en español, con el mismo contenido y enlace cruzado al principio de cada uno."
+      - "Orden: qué es (2–3 frases), resultados frente al ranking oficial de TA1C 2025 (T1 macro-F1; T2 BERTScore, BLEU-4 y ROUGE-L; con IC95), arquitectura (diagrama de #46), eficiencia (frente de Pareto de #63), inicio rápido, API (#76), modelo en HF (#77), estructura, equipo, licencia y cómo citar."
+      - "Badges de CI, licencia, versión de Python y modelo en HF."
+      - "Cifras trazables a `results/` y comandos probados desde un clon limpio."
+      - "Contexto académico en una línea (asignatura y universidad), sin detalles internos (grupo, campus virtual, plazos); el proceso ágil se enlaza a `CONTRIBUTING.md`."
+
+  - id: "79"
+    title: "Auditoría final y publicación del repositorio"
+    epic: E10
+    type: entrega
+    area: gestion
+    owners: [C]
+    reviewers: [A]
+    sprint: PUB
+    points: 3
+    priority: P1
+    depends_on: ["78"]
+    goal: >-
+      Hacer público el repo sin exponer secretos, datos sin licencia, material de la asignatura
+      ni datos personales.
+    acceptance:
+      - "Visto bueno del profesor para publicar tras la entrega (o a partir de la fecha que indique), anotado en el Diario."
+      - "`gitleaks detect --log-opts=\"--all\"` sin hallazgos en todo el historial; si aparece un secreto, se revoca y se rota antes de seguir (borrar el commit no basta)."
+      - "Historial y árbol sin CSV del corpus, `enunciado.pdf` ni material de la asignatura, pesos, cachés, `.env` ni ficheros >1 MB (`git rev-list --objects --all` o `git-sizer`)."
+      - "Issues, PRs, comentarios, Diario y logs de Actions revisados: sin tokens, datos personales ni textos largos del corpus."
+      - "`LICENSE` del código acordado por los tres (p. ej. MIT o Apache-2.0) y coherente con la tabla de #47; los datos quedan fuera de esa licencia y enlazados a sus fuentes."
+      - "Descripción, topics y web del repo (modelo de HF); al publicar se activan secret scanning, push protection y Dependabot alerts."
+      - "El propietario cambia la visibilidad a pública y lo anota en este issue con la fecha."
+    notes: "La hace quien vigila las licencias (R7); el cambio de visibilidad lo hace el propietario del repo."

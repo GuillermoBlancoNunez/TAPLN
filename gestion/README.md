@@ -2,7 +2,7 @@
 
 | Fichero | Qué es |
 |:--|:--|
-| [`backlog.yml`](backlog.yml) | 75 tareas numeradas en orden de ejecución, con criterios de aceptación, quién la hace, revisor, sprint, puntos, prioridad y tareas requeridas. Es la línea base del plan. |
+| [`backlog.yml`](backlog.yml) | 79 tareas numeradas en orden de ejecución (75 de la línea base y 4 de publicación), con criterios de aceptación, quién la hace, revisor, sprint, puntos, prioridad y tareas requeridas. Es la línea base del plan. |
 | [`ROADMAP.md`](ROADMAP.md) | Lista de tareas, calendario, reparto por persona y área, quién revisa a quién, mapa de decisiones y riesgos. |
 | [`bootstrap_github.py`](bootstrap_github.py) | Valida el backlog y lo vuelca a GitHub (issues + GitHub Project). |
 
@@ -28,6 +28,19 @@ Tras el bootstrap, la fuente de verdad es el GitHub Project.
 4. **Pasos manuales** que imprime al final: acceso al Project para los otros dos, workflows (auto-add, cerrado → Done, PR fusionada → Done) y fechas de la vista Roadmap.
 
 El repo se detecta del remoto `origin`, y el Project se crea bajo la cuenta del dueño del repo. Si el repo ya tenía issues, se avisa: los títulos llevan `[NN]` y las referencias entre tareas se ajustan solas.
+
+## Actualizar GitHub tras cambiar el backlog
+
+Los IDs de las tareas no se cambian nunca: `apply` empareja cada issue con su tarea por el ID (`<!-- backlog-id: NN -->`). Las tareas nuevas se añaden al final con el siguiente número y en GitHub quedan detrás de los issues que ya existan.
+
+```powershell
+uv run --with pyyaml python gestion/bootstrap_github.py validate
+uv run --with pyyaml python gestion/bootstrap_github.py plan
+uv run --with pyyaml python gestion/bootstrap_github.py apply --update-bodies --skip-views
+uv run --with pyyaml python gestion/bootstrap_github.py report -o gestion/ROADMAP.md
+```
+
+`--update-bodies` reescribe desde el YAML el título, el cuerpo, los labels, el milestone y los asignados de **todos** los issues: lo editado a mano en GitHub (casillas marcadas incluidas) se pierde. Se lanza antes de que se empiecen a marcar criterios, o se pasan antes esos cambios al YAML. `--skip-views` evita volver a crear vistas que ya existen.
 
 ## Problemas frecuentes
 

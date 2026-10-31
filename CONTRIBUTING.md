@@ -2,7 +2,7 @@
 
 Guía de trabajo del grupo para el proyecto TAPLN · TA1C. La seguimos los tres y se cambia solo con una PR aprobada por los otros dos.
 
-> **Resumen en 30 segundos.** Hay 75 tareas numeradas en orden de ejecución. Cada una dice qué tareas deben estar terminadas antes de empezarla, y en el repo la tarea N es el issue #N. Los tres trabajamos en todas las áreas y el revisor va rotando. Se trabaja en una rama por tarea desde `develop`; la PR lleva `Closes #N`, la aprueba el revisor de la tarea y se fusiona con *squash*. Las decisiones de modelo o de arquitectura se toman con experimentos pre-registrados que miden rendimiento y recursos, en una reunión de los tres, y quedan en un ADR en `doc/adr/`. Todo lo que se prueba, se adopte o se descarte, se anota en `Diario_de_trabajo.md`.
+> **Resumen en 30 segundos.** Hay 79 tareas numeradas en orden de ejecución. Cada una dice qué tareas deben estar terminadas antes de empezarla, y en el repo la tarea N es el issue #N. Los tres trabajamos en todas las áreas y el revisor va rotando. Se trabaja en una rama por tarea desde `develop`; la PR lleva `Closes #N`, la aprueba el revisor de la tarea y se fusiona con *squash*. Las decisiones de modelo o de arquitectura se toman con experimentos pre-registrados que miden rendimiento y recursos, en una reunión de los tres, y quedan en un ADR en `doc/adr/`. Todo lo que se prueba, se adopte o se descarte, se anota en `Diario_de_trabajo.md`. El repo se hará público al acabar, así que nada de secretos, datos del corpus ni material de la asignatura entra en git (§14).
 
 Documentos relacionados: [lista de tareas y calendario](gestion/ROADMAP.md) · [protocolo de benchmarks](doc/benchmarks/PROTOCOLO.md) · [decisiones (ADR)](doc/adr/README.md) · [creación del tablero](gestion/README.md).
 
@@ -48,7 +48,7 @@ Quién redacta el acta de cada reunión **va rotando**: es la persona en negrita
 
 ## 3. Tareas numeradas y dependencias
 
-- **El número es el orden.** En el plan, cada tarea solo depende de tareas con número menor, y en el repo la tarea N es el issue #N.
+- **El número es el orden.** En el plan, cada tarea solo depende de tareas con número menor, y en el repo la tarea N es el issue #N. Excepción: las tareas 76–79, añadidas después, van detrás de las épicas en GitHub (la 76 es el issue #85); el título lleva siempre `[NN]`.
 - **Cada issue indica:**
   - **⛔ Antes de empezar deben estar terminadas:** las tareas que tienen que estar en *Done*.
   - **➡️ Desbloquea:** las tareas que esperan a esta.
@@ -91,6 +91,7 @@ Común a todas las tareas:
 - [ ] CI en verde, con tests nuevos o actualizados si hay código.
 - [ ] Reproducible: configuración en `configs/`, semilla fija y comando exacto en la descripción de la PR.
 - [ ] Nada de `test_gold` (salvo en las tareas 61 y 62), ni datos, secretos o artefactos pesados en el diff.
+- [ ] Apto para un repo público (§14): sin secretos, textos del corpus, material de la asignatura ni datos personales, tampoco en notebooks, `results/` o logs.
 - [ ] Entrada en `Diario_de_trabajo.md`: qué se hizo o probó, por qué, la fuente y el estado (**Adoptado / Descartado / Pendiente**).
 - [ ] README o documentación actualizados si cambia cómo se usa algo.
 
@@ -197,6 +198,7 @@ gestion/       backlog (línea base), roadmap y script del tablero
 - La base de conocimiento del RAG y los ejemplos few-shot salen **solo de train**.
 - Semillas fijas, configuraciones versionadas, hash del prompt y commit registrados en cada resultado.
 - Los modelos y checkpoints se guardan fuera de git (Drive o HF Hub privado). Los JSON de resultados pequeños sí se versionan.
+- **Los datos no se versionan** (tarea 01): se descargan de las fuentes oficiales y se verifican con `Data/SHA256SUMS` (`tapln data download`, tarea 11).
 - Los secretos van en `.env` (no versionado). En `.env.example` solo figuran los nombres de las variables.
 
 ## 13. Comandos útiles
@@ -211,3 +213,21 @@ gh pr review 80 --approve            # o: --request-changes -b "[bloqueante] …
 gh pr merge 80 --squash --delete-branch
 uv run --with pyyaml python gestion/bootstrap_github.py report -o gestion/ROADMAP.md
 ```
+
+## 14. Repositorio público
+
+El repo se hará público cuando acabe la asignatura (tarea 79). Todo lo que se sube (código, historial, issues, PRs, comentarios, Diario y logs de Actions) se escribe como si ya lo fuera: lo que entra en el historial de git no desaparece sin reescribirlo.
+
+| Nunca en git | Dónde va |
+|:--|:--|
+| Tokens y claves (HF, APIs) | `.env` (ignorado); en `.env.example` solo los nombres |
+| Datos de TA1C (CSV, `test_gold`) | Se descargan (tareas 01 y 11); en `results/`, solo IDs, predicciones y métricas |
+| Material de la asignatura (enunciado, indicaciones) | `Enunciado/` (ignorado) |
+| Modelos, índices y cachés del LLM | Fuera de git (Drive o HF Hub privado) |
+| Datos personales (correos, teléfonos) | En ningún sitio; `user.email` de git con la dirección *noreply* de GitHub |
+| Salidas de notebooks (muestran textos del corpus) | `nbstripout` las borra al hacer commit |
+
+- **Barreras automáticas** (tarea 10): `gitleaks`, `detect-private-key`, `nbstripout` y `check-added-large-files` en pre-commit, y `gitleaks` en la CI.
+- **Logs:** no imprimir variables de entorno, tokens ni rutas personales, ni en scripts ni en Actions.
+- **Si se sube un secreto:** se revoca y se rota en el momento (borrar el commit no basta: sigue en el historial), se avisa en el issue y se anota en el Diario.
+- **Antes de publicar:** auditoría completa del historial, los issues y las PRs (tarea 79).

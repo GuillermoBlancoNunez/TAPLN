@@ -2,11 +2,12 @@
 
 > Generado con `uv run --with pyyaml python gestion/bootstrap_github.py report -o gestion/ROADMAP.md`. No editar a mano: se cambia `gestion/backlog.yml` y se regenera. Es la **línea base** del plan; el estado vivo está en el GitHub Project.
 
-**Entrega:** 2026-12-18 23:55 (Europe/Madrid) · **Objetivo interno:** 2026-12-17 · **Alcance:** 75 tareas · 139 pts P0 + 13 pts P1 + 17 pts P2 (ampliaciones).
+**Entrega:** 2026-12-18 23:55 (Europe/Madrid) · **Objetivo interno:** 2026-12-17 · **Alcance:** 79 tareas · 140 pts P0 + 23 pts P1 + 17 pts P2 (ampliaciones).
 
 ## Cómo leer este plan
 
 - **Tareas numeradas en orden de ejecución.** Una tarea solo puede empezar cuando están terminadas las de su columna *Requiere*, que siempre tienen un número menor. En el repo, la tarea N es el issue #N.
+- **Numeración en GitHub.** Las tareas 76–79 se añadieron después del bootstrap. En GitHub van detrás de las épicas (#76–#84): la tarea 76 es el issue #85, la 79 el #88 y la épica E10 el #89, si no se crea ningún otro issue o PR antes de relanzar `apply`. El título de cada issue lleva siempre su número de tarea [NN].
 - **Reparto rotatorio.** Los tres trabajan en todas las áreas (T1, T2, plataforma y evaluación, memoria) y la carga por sprint está equilibrada. Las decisiones se toman entre los tres.
 - **Revisiones rotatorias.** El revisor cambia de una tarea a otra, y cada uno revisa a los otros dos más o menos lo mismo. Cuando se puede, revisa quien hará la tarea siguiente que depende de esa, para que llegue conociendo el código.
 - **Portavoz** (lo exige el enunciado): @GuillermoBlancoNunez.
@@ -15,11 +16,12 @@
 
 | Sprint | Fechas | Tareas | Objetivo | Puntos P0+P1 |
 |:--|:--|:-:|:--|:-:|
-| **Sprint 1 · Cimientos** | 26-oct → 08-nov | 01–18 | Entorno, datos y medición listos; EDA y estado del arte de ambas tareas; baselines clásicos de T1; decisión del backend de inferencia (ADR-001). | 37 |
+| **Sprint 1 · Cimientos** | 26-oct → 08-nov | 01–18 | Entorno, datos y medición listos; EDA y estado del arte de ambas tareas; baselines clásicos de T1; decisión del backend de inferencia (ADR-001). | 38 |
 | **Sprint 2 · Componentes RAG** | 09-nov → 22-nov | 19–34 | Capas LLM y de recuperación; métricas oficiales; benchmarks de LLMs y embeddings (ADR-002, ADR-003); pipelines LLM + RAG v1 de T1 y T2; baselines de T2. | 38 |
 | **Sprint 3 · Ajuste y decisiones** | 23-nov → 06-dic | 35–57 | Benchmarks del enfoque de T1, de la recuperación y la generación de T2 y del juez LLM (ADR-004 a ADR-007); sistemas finales de T1 y T2; borrador de la arquitectura. | 38 |
 | **Sprint 4 · Evaluación final y entrega** | 07-dic → 18-dic | 58–73 | Congelación (ADR-009), evaluación única en test, ablaciones y eficiencia, memoria completa y entrega el 17-dic (plazo: 18-dic 23:55). | 34 |
 | **Defensa** | 19-dic → fecha del examen | 74–75 | Presentación y ensayos para la defensa del día del examen. | 5 |
+| **Publicación** | 21-dic → 10-ene | 76–79 | Tras la entrega y sin competir con ella: API de inferencia en Docker, encoder en Hugging Face Hub, README bilingüe y auditoría antes de hacer público el repo. | 10 |
 
 ```mermaid
 gantt
@@ -31,6 +33,7 @@ gantt
     Sprint 2 · Componentes RAG :S1, 2026-11-09, 2026-11-23
     Sprint 3 · Ajuste y decisiones :S2, 2026-11-23, 2026-12-07
     Sprint 4 · Evaluación final y entrega :S3, 2026-12-07, 2026-12-19
+    Publicación :S5, 2026-12-21, 2027-01-11
     section Épicas
     E1 Gestión ágil y proceso :E1, 2026-10-26, 2026-12-19
     E2 Plataforma datos infraestructura y MLOps :E2, 2026-10-26, 2026-12-07
@@ -41,6 +44,7 @@ gantt
     E7 Evaluación final y análisis :E7, 2026-11-23, 2026-12-19
     E8 Memoria :E8, 2026-10-26, 2026-12-19
     E9 Entrega y defensa :E9, 2026-12-07, 2026-12-19
+    E10 Publicación del proyecto :E10, 2026-12-21, 2027-01-11
     section Hitos
     Entrega objetivo :milestone, hito1, 2026-12-17, 0d
     Plazo de entrega :milestone, hito2, 2026-12-18, 0d
@@ -52,30 +56,31 @@ gantt
 
 | Sprint | Guillermo | Miguel | fizge | Total |
 |:--|:-:|:-:|:-:|:-:|
-| S1 | 11.7 | 12.7 | 12.7 | 37.0 |
+| S1 | 12.7 | 12.7 | 12.7 | 38.0 |
 | S2 | 12.7 | 12.7 | 12.7 | 38.0 |
 | S3 | 13.3 (+6.3) | 13.3 (+5.3) | 11.3 (+5.3) | 38.0 |
 | S4 | 11.7 | 11.7 | 10.7 | 34.0 |
 | DEF | 0.7 | 0.7 | 3.7 | 5.0 |
-| **Total** | **50.0** | **51.0** | **51.0** | **152.0** |
+| PUB | 4.0 | 3.0 | 3.0 | 10.0 |
+| **Total** | **55.0** | **54.0** | **54.0** | **163.0** |
 
 **Todos en todas las áreas** (puntos de tareas individuales, incluidas las P2):
 
 | Área | Guillermo | Miguel | fizge |
 |:--|:-:|:-:|:-:|
-| gestión | 2 | 0 | 0 |
-| común | 13 | 13 | 13 |
-| T1 | 8 | 10 | 10 |
+| gestión | 3 | 0 | 3 |
+| común | 13 | 16 | 13 |
+| T1 | 10 | 10 | 10 |
 | T2 | 14 | 14 | 14 |
-| memoria | 9 | 9 | 9 |
+| memoria | 11 | 9 | 9 |
 
 **Quién revisa a quién** (nº de PRs que aprueba cada revisor de cada autor; los ADR los aprueban los otros dos):
 
 | Revisor ↓ · Autor → | Guillermo | Miguel | fizge | Total |
 |:--|:-:|:-:|:-:|:-:|
-| Guillermo | — | 14 | 14 | 28 |
-| Miguel | 16 | — | 13 | 29 |
-| fizge | 16 | 14 | — | 30 |
+| Guillermo | — | 15 | 15 | 30 |
+| Miguel | 17 | — | 13 | 30 |
+| fizge | 17 | 14 | — | 31 |
 
 ## Lista de tareas
 
@@ -87,7 +92,7 @@ _Entorno, datos y medición listos; EDA y estado del arte de ambas tareas; basel
 
 | Nº | Tarea | La hace | La revisa | Pts | Prio | Requiere | Desbloquea |
 |:-:|:--|:--|:--|:-:|:-:|:--|:--|
-| **01** | Completar la configuración del repo y del tablero | Guillermo | Miguel | 2 | P0 | — | — |
+| **01** | Completar la configuración del repo y del tablero | Guillermo | Miguel | 3 | P0 | — | — |
 | **02** | Revisar entre los tres el proceso, el plan y el reparto | Los tres (**Guillermo**) | Miguel, fizge | 1 | P0 | — | — |
 | **03** | Sprint 1 · Planning | Los tres (**Guillermo**) | fizge | 1 | P0 | — | — |
 | **04** | Estructura del repositorio y paquete `tapln` | Guillermo | Miguel | 2 | P0 | — | 10, 11, 12, 13, 14 |
@@ -118,7 +123,7 @@ _Capas LLM y de recuperación; métricas oficiales; benchmarks de LLMs y embeddi
 | **22** | Extracción de artículos y silver labels de relevancia | fizge | Miguel | 3 | P0 | 11 | 23, 26, 30, 32, 37 |
 | **23** | Benchmark de modelos de embeddings (vecinos para T1, pasajes para T2) | Miguel | Guillermo | 3 | P0 | 11, 12, 22 | 28 |
 | **24** | Benchmark de backends de índice vectorial | fizge | Miguel | 2 | P1 | 14 | 28 |
-| **25** | Fine-tuning de encoders en español para T1 (baseline fuerte) | Guillermo | Miguel | 3 | P0 | 13, 21 | 48, 49 |
+| **25** | Fine-tuning de encoders en español para T1 (baseline fuerte) | Guillermo | Miguel | 3 | P0 | 13, 21 | 48, 49, 77 |
 | **26** | Baselines de T2 sin LLM (lead, subtítulo, frase más similar, oráculo) | Miguel | fizge | 2 | P0 | 21, 22 | 38 |
 | **27** | Capa LLM: cliente unificado, caché, prompts versionados y salida estructurada | Miguel | Guillermo | 3 | P0 | 12, 17 | 29, 30, 31, 32, 45 |
 | **28** | Decisión: stack de recuperación (embeddings + índice) | Los tres (**Miguel**) | Guillermo, fizge | 1 | P0 | 23, 24 | 37, 40, 46, 47 |
@@ -147,15 +152,15 @@ _Benchmarks del enfoque de T1, de la recuperación y la generación de T2 y del 
 | **44** | Fine-tuning QLoRA del generador de T2 | Miguel | Guillermo | 5 | P2 | 32, 33 | 54 |
 | **45** | Benchmark de modelos juez (LLM-as-a-judge) | fizge | Miguel | 3 | P1 | 27, 38 | 51 |
 | **46** | Capítulo de arquitectura del sistema (módulos, funciones, interacciones, E/S) | Guillermo | Miguel | 3 | P0 | 28, 33 | 69 |
-| **47** | Herramientas de terceros y licencias | fizge | Miguel | 2 | P0 | 28, 33 | 69 |
+| **47** | Herramientas de terceros y licencias | fizge | Miguel | 2 | P0 | 28, 33 | 69, 77 |
 | **48** | Sistema híbrido de T1: encoder fine-tuneado + LLM-RAG | fizge | Guillermo | 2 | P2 | 25, 42 | 54 |
 | **49** | Decisión: enfoque final de T1 | Los tres (**Guillermo**) | Miguel, fizge | 1 | P0 | 25, 42 | 52 |
 | **50** | Benchmark de estrategia de contexto y generación (T2) | Miguel | fizge | 5 | P0 | 32, 33, 43 | 53 |
 | **51** | Decisión: juez LLM y protocolo de evaluación | Los tres (**fizge**) | Guillermo, Miguel | 1 | P1 | 45 | — |
-| **52** | Sistema final de T1: configuración, CLI y ficha del sistema | Guillermo | fizge | 2 | P0 | 49 | 56, 60 |
+| **52** | Sistema final de T1: configuración, CLI y ficha del sistema | Guillermo | fizge | 2 | P0 | 49 | 56, 60, 76 |
 | **53** | Decisión: estrategia de contexto y generación de T2 | Los tres (**Miguel**) | Guillermo, fizge | 1 | P0 | 50 | 55 |
 | **54** | Decisión: ampliaciones opcionales (artículo en T1, NoticIA, QLoRA, híbrido) | Los tres (**Guillermo**) | Miguel, fizge | 1 | P2 | 39, 41, 44, 48 | — |
-| **55** | Sistema final de T2: configuración, CLI y ficha del sistema | Guillermo | fizge | 2 | P0 | 53 | 56, 60 |
+| **55** | Sistema final de T2: configuración, CLI y ficha del sistema | Guillermo | fizge | 2 | P0 | 53 | 56, 60, 76 |
 | **56** | Demo integrada T1 → T2 | Guillermo | Miguel | 3 | P2 | 52, 55 | — |
 | **57** | Sprint 3 · Review y retrospectiva | Los tres (**fizge**) | Miguel | 2 | P0 | — | 58 |
 
@@ -168,10 +173,10 @@ _Congelación (ADR-009), evaluación única en test, ablaciones y eficiencia, me
 | **58** | Sprint 4 · Planning | Los tres (**Guillermo**) | Miguel | 1 | P0 | 57 | — |
 | **59** | Diario de Trabajo consolidado para la memoria | fizge | Miguel | 2 | P0 | — | 69 |
 | **60** | Decisión: congelación de la arquitectura final | Los tres (**Miguel**) | Guillermo, fizge | 2 | P0 | 52, 55 | 61, 62, 63, 64 |
-| **61** | Evaluación final de T1 en test_gold y análisis de errores | fizge | Guillermo | 3 | P0 | 60 | 65 |
-| **62** | Evaluación final de T2 en test_gold y análisis de errores | Guillermo | fizge | 3 | P0 | 60 | 66 |
-| **63** | Ablaciones y resumen de eficiencia (rendimiento frente a recursos) | fizge | Miguel | 3 | P0 | 60 | 67 |
-| **64** | Manual de instalación y uso | Guillermo | Miguel | 2 | P0 | 60 | 69 |
+| **61** | Evaluación final de T1 en test_gold y análisis de errores | fizge | Guillermo | 3 | P0 | 60 | 65, 77, 78 |
+| **62** | Evaluación final de T2 en test_gold y análisis de errores | Guillermo | fizge | 3 | P0 | 60 | 66, 78 |
+| **63** | Ablaciones y resumen de eficiencia (rendimiento frente a recursos) | fizge | Miguel | 3 | P0 | 60 | 67, 78 |
+| **64** | Manual de instalación y uso | Guillermo | Miguel | 2 | P0 | 60 | 69, 78 |
 | **65** | Capítulo T1: método, experimentos y resultados | Miguel | Guillermo | 3 | P0 | 61 | 68, 69 |
 | **66** | Capítulo T2: método, experimentos y resultados | Miguel | fizge | 3 | P0 | 62 | 68, 69 |
 | **67** | Capítulo de decisiones de arquitectura y eficiencia | Miguel | Guillermo | 2 | P0 | 63 | 69 |
@@ -179,7 +184,7 @@ _Congelación (ADR-009), evaluación única en test, ablaciones y eficiencia, me
 | **69** | Revisión final cruzada de la memoria | Los tres (**Guillermo**) | Miguel, fizge | 3 | P0 | 46, 47, 59, 64, 65, 66, 67, 68 | 70 |
 | **70** | Release v1.0 y paquete de entrega (.zip con src/ y doc/) | Guillermo | Miguel | 1 | P0 | 69 | 71 |
 | **71** | Prueba de humo desde cero siguiendo solo el manual | Miguel | fizge | 1 | P0 | 70 | 72 |
-| **72** | Subida de la entrega al campus virtual | Guillermo | fizge | 1 | P0 | 71 | 73, 74 |
+| **72** | Subida de la entrega al campus virtual | Guillermo | fizge | 1 | P0 | 71 | 73, 74, 76, 77 |
 | **73** | Sprint 4 · Retrospectiva final del proyecto | Los tres (**Miguel**) | fizge | 2 | P0 | 72 | — |
 
 ### Defensa (19-dic → fecha del examen)
@@ -190,6 +195,17 @@ _Presentación y ensayos para la defensa del día del examen._
 |:-:|:--|:--|:--|:-:|:-:|:--|:--|
 | **74** | Presentación para la defensa | fizge | Guillermo | 3 | P0 | 72 | 75 |
 | **75** | Ensayos de la defensa y preparación de preguntas | Los tres (**Miguel**) | Guillermo, fizge | 2 | P0 | 74 | — |
+
+### Publicación (21-dic → 10-ene)
+
+_Tras la entrega y sin competir con ella: API de inferencia en Docker, encoder en Hugging Face Hub, README bilingüe y auditoría antes de hacer público el repo._
+
+| Nº | Tarea | La hace | La revisa | Pts | Prio | Requiere | Desbloquea |
+|:-:|:--|:--|:--|:-:|:-:|:--|:--|
+| **76** | Servicio de inferencia: API REST de T1 y T2 en Docker | Miguel | Guillermo | 3 | P1 | 52, 55, 72 | 78 |
+| **77** | Publicación del encoder fine-tuneado en Hugging Face Hub | Guillermo | fizge | 2 | P1 | 25, 47, 61, 72 | 78 |
+| **78** | README público bilingüe (español e inglés) | Guillermo | Miguel | 2 | P1 | 61, 62, 63, 64, 76, 77 | 79 |
+| **79** | Auditoría final y publicación del repositorio | fizge | Guillermo | 3 | P1 | 78 | — |
 
 ## Mapa de decisiones (experimentos → decisión → ADR)
 
@@ -285,10 +301,11 @@ Es la cadena de dependencias más larga (43 pts P0+P1): si se retrasa cualquiera
 | R4 | Incompatibilidades de Python 3.13 con parte del stack (vLLM, bitsandbytes, llama-cpp-python). | Media | Medio | #13 lo verifica en Colab y Kaggle durante el Sprint 1; si falla, se fija 3.12 y se documenta en el Diario. | fizge |
 | R5 | Retraso en la ruta crítica (#15 → #17 → #27 → #29 y #30 → #33). | Media | Alto | Trabajo en paralelo con un LLM provisional; revisión en ≤24 h para issues de la ruta crítica; seguimiento en cada standup. | Guillermo |
 | R6 | PRs bloqueadas esperando revisión. | Media | Medio | SLA de revisión 24–48 h, WIP ≤2 por persona, PRs pequeñas y CODEOWNERS para pedir revisión automáticamente. | Guillermo |
-| R7 | Licencias: datos de TA1C sin licencia explícita y modelos con licencias restrictivas. | Baja | Medio | No redistribuir datos en el zip; tabla de licencias en #47; elegir modelos con licencia compatible con uso académico. | fizge |
+| R7 | Licencias: datos de TA1C sin licencia explícita y modelos con licencias restrictivas. | Baja | Medio | Datos fuera de git desde #01 (se descargan de las fuentes oficiales); no redistribuirlos en el zip ni en el repo público; tabla de licencias en #47; modelos con licencia compatible; pesos publicados en #77 solo tras consultar a los organizadores. | fizge |
 | R8 | Coste de contexto por la rotación: quien hace una tarea no siempre hizo la anterior. | Media | Medio | El revisor de una tarea suele ser quien hará la siguiente que depende de ella; PRs con descripción y comando de prueba; demos en cada Sprint Review; ensayo de defensa (cada uno explica cualquier módulo). | Guillermo |
 | R9 | Cuello de botella de la memoria en el último sprint. | Alta | Alto | Plantilla en S1 (#9), Diario continuo, borrador de arquitectura en S3, objetivo de entrega el 17-dic. | fizge |
 | R10 | Indisponibilidad temporal de un miembro (exámenes, enfermedad). | Media | Medio | Capacidad declarada en cada Planning, recorte según el orden de prioridades, todo documentado en issues y PRs. | Guillermo |
+| R11 | Al hacer público el repo quedan expuestos secretos, datos sin licencia, material de la asignatura o datos personales (el historial de git es permanente). | Media | Alto | Historial limpiado en #01 con un solo commit; gitleaks y nbstripout en pre-commit y CI (#10); Definition of Done y CONTRIBUTING §14; auditoría completa antes de publicar (#79); un secreto filtrado se revoca, no basta con borrarlo. | Guillermo |
 
 ## Orden de recorte de alcance
 
@@ -299,4 +316,5 @@ Si la velocity real queda por debajo de lo planificado, se recorta en este orden
 - 3. #36: mantener los IC95 por bootstrap de #21 y prescindir de los tests pareados.
 - 4. #45 + #51: usar un único juez sin benchmark, declarado como limitación en la memoria.
 - 5. #20: agregar resultados con un script mínimo sin decisión de herramienta.
+- 6. Publicación (#76–#79): va después de la entrega y no compite con ella; se puede aplazar, pero el repo no se hace público sin #79.
 

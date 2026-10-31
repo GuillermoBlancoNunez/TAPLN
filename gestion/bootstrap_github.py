@@ -135,6 +135,11 @@ DOD = {
         "Entrada en `Diario_de_trabajo.md`.",
     ],
 }
+# Se añade a la Definition of Done de todas las tareas: el repo será público al acabar.
+PUBLIC_DOD = (
+    "Apto para un repo público (CONTRIBUTING §14): sin secretos, textos del corpus, material de la "
+    "asignatura ni datos personales en el diff, los notebooks, `results/` o los logs."
+)
 DEC_AGENDA = [
     "Repaso del criterio pre-registrado (5 min).",
     "Resultados presentados por quien hizo cada experimento (10 min).",
@@ -601,13 +606,16 @@ def review_counts(b: Backlog) -> dict[str, int]:
 def critical_path(
     b: Backlog, priorities: tuple[str, ...] = ("P0", "P1")
 ) -> tuple[list[Item], int]:
-    """Camino más largo (en puntos) hasta la entrega; excluye ceremonias y la defensa."""
+    """Camino más largo (en puntos) hasta la entrega; excluye ceremonias, la defensa y lo posterior."""
+    target = b.project.get("delivery_target")
     best: dict[str, tuple[int, str | None]] = {}
     for item in topo_order(b):
+        sprint = b.sprints[item.sprint]
         if (
             item.priority not in priorities
             or item.type == "gestion"
-            or b.sprints[item.sprint].end is None
+            or sprint.end is None
+            or (isinstance(target, dt.date) and sprint.start > target)
         ):
             continue
         prev = [(best[d][0], d) for d in item.depends_on if d in best]
@@ -906,7 +914,7 @@ def render_item_body(b: Backlog, item: Item, nums: Numbering) -> str:
         lines += [f"{n}. {step}" for n, step in enumerate(DEC_AGENDA, 1)]
         lines.append("")
 
-    dod = DOD.get(item.type, DOD["default"])
+    dod = [*DOD.get(item.type, DOD["default"]), PUBLIC_DOD]
     lines.append("### Definition of Done")
     lines += [
         "- [ ] "
@@ -1032,6 +1040,8 @@ def render_report(b: Backlog) -> str:
         "- **Tareas numeradas en orden de ejecución.** Una tarea solo puede empezar cuando están terminadas las de "
         "su columna *Requiere*, que siempre tienen un número menor. En el repo, la tarea N es el issue #N."
     )
+    if b.project.get("numbering_note"):
+        w(f"- **Numeración en GitHub.** {b.project['numbering_note']}")
     w(
         "- **Reparto rotatorio.** Los tres trabajan en todas las áreas (T1, T2, plataforma y evaluación, memoria) "
         "y la carga por sprint está equilibrada. Las decisiones se toman entre los tres."
@@ -1857,6 +1867,7 @@ class Applier:
                     "- **Tareas numeradas** en orden de ejecución: la tarea N es el issue #N y solo se empieza cuando "
                     "están cerradas las que aparecen en «Antes de empezar deben estar terminadas»."
                 ),
+                *([f"- **Numeración:** {note}"] if (note := self.b.project.get("numbering_note")) else []),
                 "- **Columnas:** Backlog → Ready → In progress → In review → Done (máximo 2 tareas en curso por persona).",
                 (
                     "- **Reparto rotatorio:** los tres trabajan en todas las áreas; el revisor (campo *Revisor*) "

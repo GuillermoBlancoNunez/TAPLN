@@ -35,7 +35,7 @@ uv run tapln …   # comando exacto que reproduce el resultado
 - [ ] Reproducible: configuración en `configs/`, semilla fija y comando indicado arriba.
 - [ ] Resultados en `results/NN/` con el esquema común (rendimiento, recursos y hardware), si aplica.
 - [ ] No se toca `test_gold` (salvo en las tareas 61 y 62, con `--final-test`) y la base de conocimiento del RAG solo contiene train.
-- [ ] Sin datos, secretos, modelos ni artefactos pesados en el diff.
+- [ ] Apto para un repo público (CONTRIBUTING §14): sin secretos, datos del corpus, material de la asignatura, datos personales, modelos ni artefactos pesados (tampoco en notebooks, `results/` o logs).
 - [ ] Entrada en `Diario_de_trabajo.md` (qué, por qué, fuente y estado).
 - [ ] Documentación o README actualizados si cambia el uso.
 
@@ -45,5 +45,6 @@ uv run tapln …   # comando exacto que reproduce el resultado
 - [ ] Sin fuga de datos; split y métricas correctos (configuración oficial, tarea 21).
 - [ ] He ejecutado el comando de prueba o he revisado los logs y `results/`.
 - [ ] Código legible, con tests razonables.
+- [ ] Nada que no pueda hacerse público: secretos, textos del corpus, salidas de notebooks o datos personales.
 
 <!-- Prefijos de comentario: [bloqueante] · [sugerencia] · [pregunta] · [nit]. Fusiona el autor con «Squash and merge». -->
